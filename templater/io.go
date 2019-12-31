@@ -2,7 +2,6 @@ package templater
 
 import (
 	"context"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"

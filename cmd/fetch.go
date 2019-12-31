@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"github.com/contextgg/faas-cd/templater"
 
@@ -31,7 +31,7 @@ func runFetch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var opts []templater.TemplaterOption
+	var opts []templater.Option
 	for _, templateSource := range parsedServices.StackConfiguration.TemplateConfigs {
 		opts = append(opts, templater.AddLocationOption(templateSource.Name, templateSource.Source))
 	}
