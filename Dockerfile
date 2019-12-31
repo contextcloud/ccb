@@ -22,6 +22,6 @@ RUN go build --ldflags "-s -w \
 FROM gcr.io/cloud-builders/docker
 
 ENV PATH=$PATH:/usr/bin/
-CMD ["ccb"]
+ENTRYPOINT ["/usr/bin/ccb"]
 
 COPY --from=builder /go/src/github.com/contextcloud/ccb-cli/ccb /usr/bin/
