@@ -110,7 +110,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			environment = &allEnvironment
 		}
 
-		var readOnlyRoot *bool
+		var readOnlyRoot *bool = nil
 		if fn.ReadOnlyRootFilesystem {
 			readOnlyRoot = &fn.ReadOnlyRootFilesystem
 		}
@@ -143,12 +143,15 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		manifests = append(manifests, manifest)
 	}
 
-	//Marshal the object definition to yaml
-	out, err := yaml.Marshal(manifests)
-	if err != nil {
-		return err
+	var all string
+	//Marshal the object definitions to yaml
+	for _, manifest := range manifests {
+		out, err := yaml.Marshal(manifest)
+		if err != nil {
+			return err
+		}
+		all += "---\n" + string(out)
 	}
-
-	fmt.Println(string(out))
+	fmt.Println(all)
 	return nil
 }
