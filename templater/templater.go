@@ -231,7 +231,7 @@ func pack(templateName, fnName string, args map[string]string) error {
 	realDst := path.Join(".", "build", fnName)
 	tmpl := path.Join(".", "template", templateName)
 
-	td, tdcloser, err := safetemp.Dir("", "faas-cd")
+	td, tdcloser, err := safetemp.Dir("", "ccb-cli")
 	if err != nil {
 		return err
 	}

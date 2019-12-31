@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/contextgg/faas-cd/models"
+	"github.com/contextcloud/ccb-cli/models"
 
 	"github.com/openfaas/faas-cli/stack"
 	"github.com/spf13/cobra"
@@ -110,6 +110,11 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			environment = &allEnvironment
 		}
 
+		var readOnlyRoot *bool
+		if fn.ReadOnlyRootFilesystem {
+			readOnlyRoot = &fn.ReadOnlyRootFilesystem
+		}
+
 		spec := models.FunctionSpec{
 			Name:                   name,
 			Image:                  buildImageName(registry, fn.Image, tag),
@@ -120,7 +125,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			Constraints:            constraints,
 			Limits:                 limits,
 			Requests:               requests,
-			ReadOnlyRootFilesystem: fn.ReadOnlyRootFilesystem,
+			ReadOnlyRootFilesystem: readOnlyRoot,
 		}
 
 		manifest := models.Function{

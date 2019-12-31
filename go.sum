@@ -70,8 +70,14 @@ github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrk
 github.com/mitchellh/go-testing-interface v1.0.0 h1:fzU/JVNcaqHQEcVFAKeR41fkiLdIPrefOvVG1VZ96U0=
 github.com/mitchellh/go-testing-interface v1.0.0/go.mod h1:kRemZodwjscx+RGhAo8eIhFbs2+BFgRtFPeD/KE+zxI=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
+github.com/morikuni/aec v1.0.0 h1:nP9CBfwrvYnBRgY6qfDQkygYDmYwOilePFkwzv4dU8A=
+github.com/morikuni/aec v1.0.0/go.mod h1:BbKIizmSmc5MMPqRYbxO4ZU0S0+P200+tUnFx7PXmsc=
+github.com/openfaas/faas v0.0.0-20191231095230-cf6e9ed6b208 h1:Fe6rf1p7ltlhD/+acWvMhubIprP96CkkUZbbkNmkrtQ=
+github.com/openfaas/faas v0.0.0-20191231095230-cf6e9ed6b208/go.mod h1:E0m2rLup0Vvxg53BKxGgaYAGcZa3Xl+vvL7vSi5yQ14=
 github.com/openfaas/faas-cli v0.0.0-20191226190125-63f310208b4d h1:c3NfpT1PJhcn2nB53ZqZa2pMQb8hR6IkTDXu14/RZ3g=
 github.com/openfaas/faas-cli v0.0.0-20191226190125-63f310208b4d/go.mod h1:u/KO+e43wkagC0lqM1eaqNEWEBdg08Q1ugP/idj39MM=
+github.com/openfaas/faas-provider v0.0.0-20191215182504-d6579bdcf7c8 h1:WfgL5tPQDLvYPnasu6rgZkuZnj1VX74XGDpj4cAQydY=
+github.com/openfaas/faas-provider v0.0.0-20191215182504-d6579bdcf7c8/go.mod h1:W4OIp33RUOpR7wW+omJB/7GhIydRmYXvKf/VqUKI4yM=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday v1.5.2/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/contextgg/faas-cd/templater"
+	"github.com/contextcloud/ccb-cli/templater"
 
 	"github.com/openfaas/faas-cli/stack"
 	"github.com/spf13/cobra"

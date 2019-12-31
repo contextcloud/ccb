@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/contextgg/faas-cd/cmd"
+	"github.com/contextcloud/ccb-cli/cmd"
 )
 
 func main() {

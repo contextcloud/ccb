@@ -38,5 +38,5 @@ type FunctionSpec struct {
 	Secrets                []string           `yaml:"secrets,omitempty"`
 	Limits                 *FunctionResources `yaml:"limits,omitempty"`
 	Requests               *FunctionResources `yaml:"requests,omitempty"`
-	ReadOnlyRootFilesystem bool               `yaml:"readOnlyRootFilesystem"`
+	ReadOnlyRootFilesystem *bool              `yaml:"readOnlyRootFilesystem,omitempty"`
 }
