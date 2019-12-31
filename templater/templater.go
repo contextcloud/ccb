@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/go-getter"
+	"github.com/hashicorp/go-safetemp"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -85,7 +87,7 @@ func (c *Client) Download(ctx context.Context) ([]string, error) {
 	}
 
 	// make a go channel!.
-	os.RemoveAll(path.Join(".", "templates"))
+	os.RemoveAll(path.Join(".", "template"))
 	return downloadAll(ctx, templates)
 }
 func (c *Client) Pack(ctx context.Context) ([]string, error) {
@@ -160,4 +162,22 @@ func download(repository string, template string) error {
 		Pwd:  ".",
 	}
 	return cli.Get()
+}
+
+func pack(name string) error {
+	realDst := fmt.Sprintf("build/%s", name)
+
+	td, tdcloser, err := safetemp.Dir("", "getter")
+	if err != nil {
+		return err
+	}
+	defer tdcloser.Close()
+
+	if err := os.RemoveAll(realDst); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(realDst, 0755); err != nil {
+		return err
+	}
+
 }
