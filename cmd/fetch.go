@@ -16,8 +16,8 @@ var fetchCmd = &cobra.Command{
 	Short: "fetch downloads all templates",
 	Long:  `fetch finds all templates and downloads them`,
 	Example: `
-  faas-cd fetch -f https://domain/path/service.yml
-  faas-cd fetch -f ./service.yml`,
+  ccb fetch -f https://domain/path/service.yml
+  ccb fetch -f ./service.yml`,
 	RunE: runFetch,
 }
 
@@ -48,7 +48,7 @@ func runFetch(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, path := range downloaded {
-		fmt.Printf("Fetched %s", path)
+		fmt.Printf("Fetched %s\n", path)
 	}
 	return nil
 }

@@ -25,8 +25,8 @@ var generateCmd = &cobra.Command{
 	Short: "generates Kubernetes Manifests",
 	Long:  `generates Kubernetes Manifest files using a spec provided in yaml`,
 	Example: `
-  faas-cd generate -f https://domain/path/service.yml
-  faas-cd generate -f ./service.yml`,
+  ccb generate -f https://domain/path/service.yml
+  ccb generate -f ./service.yml`,
 	RunE: runGenerate,
 }
 

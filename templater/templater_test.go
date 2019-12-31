@@ -15,7 +15,7 @@ func Test_Can_Download(t *testing.T) {
 
 func Test_Templater_Download(t *testing.T) {
 	templater := NewTemplater(
-		AddLocationOption("golang-middleware", "github.com/openfaas-incubator/golang-http-template"),
+		AddLocationOption("golang-middleware", "https://github.com/openfaas-incubator/golang-http-template"),
 	)
 	templater.AddFunction("yes", "golang-es")
 	templater.AddFunction("yes2", "golang-middleware")
@@ -27,12 +27,8 @@ func Test_Templater_Download(t *testing.T) {
 		return
 	}
 
-	expected := []string{
-		"github.com/openfaas-incubator/golang-http-template/template//golang-middleware",
-		"github.com/contextgg/openfaas-templates/template//golang-http-es",
-		"github.com/contextgg/openfaas-templates/template//golang-es",
-	}
-	if !reflect.DeepEqual(r, expected) {
+	expected := 3
+	if len(r) != expected {
 		t.Errorf("Expect %v, Got %v", expected, r)
 		return
 	}

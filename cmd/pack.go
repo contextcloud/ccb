@@ -16,8 +16,8 @@ var packCmd = &cobra.Command{
 	Short: "pack makes docker buildables",
 	Long:  `pack converts functions into buildable docker specs`,
 	Example: `
-  faas-cd pack -f https://domain/path/service.yml
-  faas-cd pack -f ./service.yml`,
+  ccb pack -f https://domain/path/service.yml
+  ccb pack -f ./service.yml`,
 	RunE: runPack,
 }
 
@@ -47,7 +47,7 @@ func runPack(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	for _, path := range downloaded {
-		fmt.Printf("Fetched %s", path)
+		fmt.Printf("Fetched %s\n", path)
 	}
 
 	packed, err := t.Pack(context.Background())
@@ -55,7 +55,7 @@ func runPack(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	for _, path := range packed {
-		fmt.Printf("Packed %s", path)
+		fmt.Printf("Packed %s\n", path)
 	}
 
 	return nil

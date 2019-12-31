@@ -63,15 +63,13 @@ func (c *Client) AddFunction(name string, template string) {
 func (c *Client) getTemplate(template string) string {
 	// get the source.!
 	loc, ok := c.templateLocations[template]
-	if !ok {
+	if !ok || len(loc) == 0 {
 		loc = defaultTemplateLocation
 	}
 
 	// build the location!.
 	// strip the "https://"
-	if strings.HasPrefix(loc, "https://") {
-		loc = loc[:8]
-	}
+	loc = strings.TrimPrefix(loc, "https://")
 
 	if strings.HasSuffix(loc, "/") {
 		loc = loc[0 : len(loc)-1]
@@ -276,7 +274,7 @@ func pack(templateName, fnName string, args map[string]string) error {
 	if err := os.MkdirAll(realDst, 0755); err != nil {
 		return fmt.Errorf("Could not create pack destination: %w", err)
 	}
-	if err := copyDir(ctx, realDst, td, true); err != nil {
+	if err := copyDir(ctx, realDst, td, false); err != nil {
 		return fmt.Errorf("Could not copy pack to dest: %w", err)
 	}
 	return nil

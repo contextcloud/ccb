@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	defaultYAML = "stack.yml"
+)
+
 // Flags that are to be added to all commands.
 var (
 	yamlFile string
@@ -27,17 +31,27 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "faas-cd",
-	Short: "Manage your OpenFaaS functions from the command line",
+	Use:   "ccb",
+	Short: "Manage your Context Cloud functions from the command line",
 	Long: `
-Manage your OpenFaaS functions from the command line`,
-	Run: runFaasCD,
+Manage your Context Cloud functions from the command line`,
+	RunE: runFaasCD,
 }
 
-func runFaasCD(cmd *cobra.Command, args []string) {
+func runFaasCD(cmd *cobra.Command, args []string) error {
+	return cmd.Help()
+}
+
+func checkAndSetDefaultYaml() {
+	// Check if there is a default yaml file and set it
+	if _, err := os.Stat(defaultYAML); err == nil {
+		yamlFile = defaultYAML
+	}
 }
 
 func Execute(customArgs []string) {
+	checkAndSetDefaultYaml()
+
 	rootCmd.SilenceUsage = true
 	rootCmd.SilenceErrors = true
 	rootCmd.SetArgs(customArgs[1:])
