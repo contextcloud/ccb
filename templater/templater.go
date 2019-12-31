@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-const defaultTemplateLocation = "github.com/contextgg/openfaas-templates"
+const defaultTemplateLocation = "github.com/contextcloud/templates"
 
 // Option options for our templater
 type Option func(*Client)
