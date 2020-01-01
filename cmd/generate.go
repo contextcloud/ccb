@@ -120,6 +120,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			Image:                  buildImageName(registry, name, tag),
 			Annotations:            fn.Annotations,
 			Labels:                 fn.Labels,
+			Secrets:                fn.Secrets,
 			Environment:            environment,
 			Constraints:            constraints,
 			Limits:                 limits,
