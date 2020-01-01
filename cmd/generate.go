@@ -117,8 +117,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 
 		spec := models.FunctionSpec{
 			Name:                   name,
-			Image:                  buildImageName(registry, fn.Image, tag),
-			Handler:                fn.Handler,
+			Image:                  buildImageName(registry, name, tag),
 			Annotations:            fn.Annotations,
 			Labels:                 fn.Labels,
 			Environment:            environment,

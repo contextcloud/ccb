@@ -30,7 +30,6 @@ type FunctionSpec struct {
 	Name                   string             `yaml:"name"`
 	Image                  string             `yaml:"image"`
 	Replicas               *int32             `yaml:"replicas,omitempty"`
-	Handler                string             `yaml:"handler,omitempty"`
 	Annotations            *map[string]string `yaml:"annotations,omitempty"`
 	Labels                 *map[string]string `yaml:"labels,omitempty"`
 	Environment            *map[string]string `yaml:"environment,omitempty"`
