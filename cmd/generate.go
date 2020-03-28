@@ -90,6 +90,11 @@ func buildImageName(registry, imageName, tag string) string {
 
 func findFile(fileName string) (io.ReadCloser, error) {
 	paths := []string{
+		"./" + fileName + ".yaml",
+		"./" + fileName + ".yml",
+		"./" + fileName,
+		fileName + ".yaml",
+		fileName + ".yml",
 		fileName,
 	}
 
