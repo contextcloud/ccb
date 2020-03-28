@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/contextcloud/ccb-cli/builder"
+	"github.com/contextcloud/ccb-cli/spec"
 
-	"github.com/openfaas/faas-cli/stack"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +29,7 @@ func init() {
 }
 
 func runBuild(cmd *cobra.Command, args []string) error {
-	parsedServices, err := stack.ParseYAMLFile(yamlFile, regex, filter, envsubst)
+	parsedServices, err := spec.ParseYAMLFile(yamlFile, regex, filter, envsubst)
 	if err != nil {
 		return err
 	}

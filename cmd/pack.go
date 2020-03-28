@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/contextcloud/ccb-cli/spec"
 	"github.com/contextcloud/ccb-cli/templater"
 
-	"github.com/openfaas/faas-cli/stack"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,7 @@ func init() {
 }
 
 func runPack(cmd *cobra.Command, args []string) error {
-	parsedServices, err := stack.ParseYAMLFile(yamlFile, regex, filter, envsubst)
+	parsedServices, err := spec.ParseYAMLFile(yamlFile, regex, filter, envsubst)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func runPack(cmd *cobra.Command, args []string) error {
 	t := templater.NewTemplater(opts...)
 	for name, fn := range parsedServices.Functions {
 		// Need to fetch templates.
-		t.AddFunction(name, fn.Language)
+		t.AddFunction(name, fn.Engine, fn.Language)
 	}
 
 	downloaded, err := t.Download(context.Background())

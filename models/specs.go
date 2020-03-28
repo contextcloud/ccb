@@ -39,3 +39,28 @@ type FunctionSpec struct {
 	Requests               *FunctionResources `yaml:"requests,omitempty"`
 	ReadOnlyRootFilesystem *bool              `yaml:"readOnlyRootFilesystem,omitempty"`
 }
+
+// KubeMetadata basic metadata for a K8 manifest
+type KubeMetadata struct {
+	Name      string `yaml:"name"`
+	Namespace string `yaml:"namespace"`
+}
+
+// KubeSecret for parsing secret files
+type KubeSecret struct {
+	Kind     string                 `yaml:"kind"`
+	Metadata *KubeMetadata          `yaml:"metadata"`
+	Data     map[string]interface{} `yaml:"data"`
+	Spec     *SealedSecretSpec      `yaml:"spec"`
+}
+
+// SealedSecretSpec for parsing sealedSecrets encrypted data
+type SealedSecretSpec struct {
+	EncryptedData map[string]interface{} `yaml:"encryptedData"`
+}
+
+// ProjectedSecret for create a project secret volume
+type ProjectedSecret struct {
+	Name  string
+	Items []string
+}

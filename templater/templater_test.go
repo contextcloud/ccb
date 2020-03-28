@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Can_Download(t *testing.T) {
-	err := download("github.com/contextgg/openfaas-templates/template//golang-http-es", "golang-http-es")
+	err := download("github.com/contextgg/openfaas-templates/openfaas//golang-http-es", "golang-http-es")
 	if err != nil {
 		t.Error(err)
 	}
@@ -17,8 +17,8 @@ func Test_Templater_Download(t *testing.T) {
 	templater := NewTemplater(
 		AddLocationOption("golang-middleware", "https://github.com/openfaas-incubator/golang-http-template"),
 	)
-	templater.AddFunction("yes2", "golang-middleware")
-	templater.AddFunction("yes3", "golang-http-es")
+	templater.AddFunction("yes2", "template", "golang-middleware")
+	templater.AddFunction("yes3", "openfaas", "golang-http-es")
 
 	r, err := templater.Download(context.TODO())
 	if err != nil {
@@ -42,7 +42,7 @@ func Test_Pack(t *testing.T) {
 
 func Test_Templater_Pack(t *testing.T) {
 	templater := NewTemplater()
-	templater.AddFunction("example", "golang-http-es")
+	templater.AddFunction("example", "openfaas", "golang-http-es")
 
 	_, err := templater.Download(context.TODO())
 	if err != nil {

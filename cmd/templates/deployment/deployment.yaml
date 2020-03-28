@@ -1,0 +1,110 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels: 
+    release: {{ .Name }}
+spec:
+{{- if $.Replicas }}
+  replicas: {{ .Replicas }}
+{{- end }}
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      name: {{ .Name }}
+      labels:
+        release: {{ .Name }}
+        {{- with .Labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- if $.Annotations }}
+      annotations:
+        {{- toYaml .Annotations | nindent 8 }}        
+{{- end }}
+    spec:
+      containers:
+      - name: {{ .Name }}
+        image: {{ .Image }}
+{{- if $.Environment }}
+        env:
+        {{- range $key, $value := .Environment }}
+        - name: {{ $key }}
+          value: {{ $value }}
+        {{- end }}
+{{- end }}
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: metrics
+          containerPort: 8081
+        - name: health
+          containerPort: 8082
+{{- if $.LivenessProbe.Enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ $.LivenessProbe.Path }}
+            port: health
+            scheme: HTTP
+          initialDelaySeconds: {{ $.LivenessProbe.InitialDelaySeconds }}
+          timeoutSeconds: {{ $.LivenessProbe.TimeoutSeconds }}
+          periodSeconds: {{ $.LivenessProbe.PeriodSeconds }}
+{{- end }}
+{{- if $.ReadinessProbe.Enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ $.ReadinessProbe.Path }}
+            port: health
+            scheme: HTTP
+          initialDelaySeconds: {{ $.ReadinessProbe.InitialDelaySeconds }}
+          timeoutSeconds: {{ $.ReadinessProbe.TimeoutSeconds }}
+          periodSeconds: {{ $.ReadinessProbe.PeriodSeconds }}
+{{- end }}
+{{- if or $.Limits $.Requests }}
+        resources:
+{{- if $.Limits }}
+          limits:
+            {{- range $key, $value := .Limits }}
+            {{ $key }}: {{ $value }}
+            {{- end }}
+{{- end }}
+{{- if $.Requests }}
+          requests:
+            {{- range $key, $value := .Requests }}
+            {{ $key }}: {{ $value }}
+            {{- end }}
+{{- end }}
+{{- end }}
+{{- if $.NodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .NodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+{{- end }}
+{{- if $.ReadOnlyRootFilesystem }}
+        securityContext:
+          readOnlyRootFilesystem: {{ $.ReadOnlyRootFilesystem }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /tmp
+          name: temp
+{{- if $.Secrets }}
+      {{- range $key, $value := .Secrets }}
+        - mountPath: /var/cag/secrets
+          name: {{ $value.Name }}
+          readOnly: true
+      {{- end }}
+{{- end }}
+      volumes:
+      - emptyDir: {}
+        name: temp
+{{- if $.Secrets }}
+    {{- range $key, $value := .Secrets }}
+      - name: {{ $value.Name }}
+        projected:
+          defaultMode: 420
+          sources:
+          - secret:
+              name: {{ $value.Name }}
+    {{- end }}
+{{- end }}

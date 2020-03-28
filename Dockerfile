@@ -1,9 +1,11 @@
-FROM golang:1.13 as builder
+FROM golang:1.14 as builder
 
 ENV GO111MODULE=off
 ENV CGO_ENABLED=0
 ENV VERSION=
 ENV GIT_COMMIT=
+
+RUN go get github.com/GeertJohan/go.rice/rice
 
 WORKDIR /go/src/github.com/contextcloud/ccb-cli
 COPY . .
@@ -11,6 +13,7 @@ COPY . .
 # Run a gofmt and exclude all vendored code.
 RUN test -z "$(gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*"))" || { echo "Run \"gofmt -s -w\" on your Golang code"; exit 1; }
 
+RUN go generate ./...
 RUN go test $(go list ./... | grep -v /vendor/ | grep -v /template/|grep -v /build/|grep -v /sample/) -cover
 
 RUN go build --ldflags "-s -w \
