@@ -26,6 +26,13 @@ spec:
       containers:
       - name: {{ .Name }}
         image: {{ .Image }}
+{{- if $.Secrets }}
+        envFrom:
+        {{- range $key, $value := .Secrets }}
+        - secretRef:
+            name: {{ $value.Name }}
+        {{- end }}
+{{- end }}
 {{- if $.Environment }}
         env:
         {{- range $key, $value := .Environment }}
