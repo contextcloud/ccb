@@ -76,6 +76,9 @@ type Function struct {
 	// BuildOptions to determine native packages
 	BuildOptions []string `yaml:"build_options"`
 
+	// BuildArgs for the function
+	BuildArgs map[string]string `yaml:"build_args"`
+
 	// Annotations
 	Annotations *map[string]string `yaml:"annotations"`
 

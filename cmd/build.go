@@ -38,9 +38,12 @@ func runBuild(cmd *cobra.Command, args []string) error {
 		builder.SetRegistry(registry),
 		builder.SetTag(tag),
 	)
-	for name := range parsedServices.Functions {
+	for name, val := range parsedServices.Functions {
 		// Args!
 		args := make(builder.BuildArgs)
+		if val.BuildArgs != nil {
+			args = builder.BuildArgs(val.BuildArgs)
+		}
 
 		// Need to fetch templates.
 		b.AddService(name, args)
