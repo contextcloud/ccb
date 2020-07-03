@@ -251,18 +251,24 @@ func (g *gen) cloud() ([]string, error) {
 		return nil, envErr
 	}
 
-	var limits *models.FunctionResources
+	var limits map[string]string
 	if g.fn.Limits != nil {
-		limits = &models.FunctionResources{
-			Memory: g.fn.Limits.Memory,
-			CPU:    g.fn.Limits.CPU,
+		limits = make(map[string]string)
+		if len(g.fn.Limits.Memory) > 0 {
+			limits["memory"] = g.fn.Limits.Memory
+		}
+		if len(g.fn.Limits.CPU) > 0 {
+			limits["cpu"] = g.fn.Limits.CPU
 		}
 	}
-	var requests *models.FunctionResources
+	var requests map[string]string
 	if g.fn.Requests != nil {
-		requests = &models.FunctionResources{
-			Memory: g.fn.Requests.Memory,
-			CPU:    g.fn.Requests.CPU,
+		requests = make(map[string]string)
+		if len(g.fn.Requests.Memory) > 0 {
+			requests["memory"] = g.fn.Requests.Memory
+		}
+		if len(g.fn.Limits.CPU) > 0 {
+			requests["cpu"] = g.fn.Requests.CPU
 		}
 	}
 	var constraints []string
