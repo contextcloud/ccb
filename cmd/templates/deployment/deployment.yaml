@@ -85,12 +85,6 @@ spec:
             {{- end }}
 {{- end }}
 {{- end }}
-{{- if $.NodeSelector }}
-      nodeSelector:
-        {{- range $key, $value := .NodeSelector }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
-{{- end }}
 {{- if $.ReadOnlyRootFilesystem }}
         securityContext:
           readOnlyRootFilesystem: {{ $.ReadOnlyRootFilesystem }}
@@ -104,6 +98,21 @@ spec:
           name: {{ $value.Name }}
           readOnly: true
       {{- end }}
+{{- end }}
+{{- if $.SqlProxy }}
+      - name: sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.17
+        command:
+          - "/cloud_sql_proxy"
+          - {{ .SqlProxy }}
+        securityContext:
+          runAsNonRoot: true
+{{- end }}
+{{- if $.NodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .NodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
 {{- end }}
       volumes:
       - emptyDir: {}

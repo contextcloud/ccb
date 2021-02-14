@@ -320,6 +320,10 @@ func (g *gen) cloud() ([]string, error) {
 	data["ReadinessProbe"] = readinessProbe
 	data["Secrets"] = secrets
 
+	if len(g.fn.SqlProxy) > 0 {
+		data["SqlProxy"] = g.fn.SqlProxy
+	}
+
 	var all []string
 	gen := func(path string, info os.FileInfo, err error) error {
 		// Guard

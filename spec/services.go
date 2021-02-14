@@ -90,4 +90,7 @@ type Function struct {
 
 	// DisableReadiness will disable readiness
 	DisableReadiness bool `yaml:"disable_readiness"`
+
+	// SqlProxy if we want to have a sidecar proxy
+	SqlProxy string `yaml:"sql_proxy"`
 }
