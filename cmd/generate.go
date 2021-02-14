@@ -287,14 +287,14 @@ func (g *gen) cloud() ([]string, error) {
 	}
 
 	var livenessProbe *probe = &probe{
-		Enabled:             true,
+		Enabled:             !g.fn.DisableLiveness,
 		Path:                "/live",
 		InitialDelaySeconds: 5,
 		TimeoutSeconds:      5,
 		PeriodSeconds:       5,
 	}
 	var readinessProbe *probe = &probe{
-		Enabled:             true,
+		Enabled:             !g.fn.DisableReadiness,
 		Path:                "/ready",
 		InitialDelaySeconds: 5,
 		TimeoutSeconds:      5,

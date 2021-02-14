@@ -84,4 +84,10 @@ type Function struct {
 
 	// Namespace of the function
 	Namespace string `yaml:"namespace,omitempty"`
+
+	// DisableLiveness will disable liveness
+	DisableLiveness bool `yaml:"disable_liveness"`
+
+	// DisableReadiness will disable readiness
+	DisableReadiness bool `yaml:"disable_readiness"`
 }
