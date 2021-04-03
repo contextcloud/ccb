@@ -36,6 +36,12 @@ type FunctionResources struct {
 	CPU    string `yaml:"cpu"`
 }
 
+// FunctionProbe Memory and CPU
+type FunctionProbe struct {
+	Disabled bool   `yaml:"disabled"`
+	Port     string `yaml:"port"`
+}
+
 // Function as deployed or built on FaaS
 type Function struct {
 	// Name of deployed function
@@ -85,11 +91,11 @@ type Function struct {
 	// Namespace of the function
 	Namespace string `yaml:"namespace,omitempty"`
 
-	// DisableLiveness will disable liveness
-	DisableLiveness bool `yaml:"disable_liveness"`
+	// Liveness settings
+	Liveness FunctionProbe `yaml:"liveness"`
 
-	// DisableReadiness will disable readiness
-	DisableReadiness bool `yaml:"disable_readiness"`
+	// Readiness settings
+	Readiness FunctionProbe `yaml:"readiness"`
 
 	// SqlProxy if we want to have a sidecar proxy
 	SqlProxy string `yaml:"sql_proxy"`

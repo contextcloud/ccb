@@ -221,6 +221,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 type probe struct {
 	Enabled             bool
 	Path                string
+	Port                string
 	InitialDelaySeconds int
 	TimeoutSeconds      int
 	PeriodSeconds       int
@@ -286,16 +287,27 @@ func (g *gen) cloud() ([]string, error) {
 		readOnlyRoot = &g.fn.ReadOnlyRootFilesystem
 	}
 
+	livenessPort := "health"
+	if g.fn.Liveness.Port != "" {
+		livenessPort = g.fn.Liveness.Port
+	}
 	var livenessProbe *probe = &probe{
-		Enabled:             !g.fn.DisableLiveness,
+		Enabled:             !g.fn.Liveness.Disabled,
 		Path:                "/live",
+		Port:                livenessPort,
 		InitialDelaySeconds: 5,
 		TimeoutSeconds:      5,
 		PeriodSeconds:       5,
 	}
+
+	readinessPort := "health"
+	if g.fn.Readiness.Port != "" {
+		readinessPort = g.fn.Readiness.Port
+	}
 	var readinessProbe *probe = &probe{
-		Enabled:             !g.fn.DisableReadiness,
+		Enabled:             !g.fn.Readiness.Disabled,
 		Path:                "/ready",
+		Port:                readinessPort,
 		InitialDelaySeconds: 5,
 		TimeoutSeconds:      5,
 		PeriodSeconds:       5,

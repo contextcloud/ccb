@@ -54,7 +54,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ $.LivenessProbe.Path }}
-            port: health
+            port: {{ $.LivenessProbe.Port }}
             scheme: HTTP
           initialDelaySeconds: {{ $.LivenessProbe.InitialDelaySeconds }}
           timeoutSeconds: {{ $.LivenessProbe.TimeoutSeconds }}
@@ -64,7 +64,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ $.ReadinessProbe.Path }}
-            port: health
+            port: {{ $.ReadinessProbe.Port }}
             scheme: HTTP
           initialDelaySeconds: {{ $.ReadinessProbe.InitialDelaySeconds }}
           timeoutSeconds: {{ $.ReadinessProbe.TimeoutSeconds }}
