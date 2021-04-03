@@ -318,6 +318,7 @@ func (g *gen) cloud() ([]string, error) {
 		return nil, err
 	}
 
+	data["Replicas"] = g.fn.Replicas
 	data["Name"] = g.name
 	data["Namespace"] = namespace
 	data["Image"] = buildImageName(registry, g.name, tag)

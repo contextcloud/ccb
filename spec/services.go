@@ -88,6 +88,9 @@ type Function struct {
 	// Annotations
 	Annotations *map[string]string `yaml:"annotations"`
 
+	// Replicas number of relicas
+	Replicas *int `yaml:"replicas"`
+
 	// Namespace of the function
 	Namespace string `yaml:"namespace,omitempty"`
 
