@@ -21,10 +21,6 @@ spec:
         {{- with .Labels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-{{- if $.Annotations }}
-      annotations:
-        {{- toYaml .Annotations | nindent 8 }}        
-{{- end }}
     spec:
       containers:
       - name: {{ .Name }}
