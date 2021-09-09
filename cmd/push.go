@@ -34,16 +34,19 @@ func runPush(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	gargs, err := parseMap(buildArgs, "build-args")
+	if err != nil {
+		return err
+	}
+
 	b := builder.NewBuilder(
 		builder.SetRegistry(registry),
 		builder.SetTag(tag),
+		builder.SetNetwork(network),
 	)
 	for name, val := range parsedServices.Functions {
 		// Args!
-		args := make(builder.BuildArgs)
-		if val.BuildArgs != nil {
-			args = builder.BuildArgs(val.BuildArgs)
-		}
+		args := mergeMap(gargs, val.BuildArgs)
 
 		// Need to fetch templates.
 		b.AddService(name, args)

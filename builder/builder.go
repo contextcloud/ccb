@@ -26,6 +26,13 @@ func SetTag(tag string) Option {
 	}
 }
 
+// SetNetwork use this network when building
+func SetNetwork(network string) Option {
+	return func(c *Client) {
+		c.network = network
+	}
+}
+
 // BuildArgs make prettier
 type BuildArgs map[string]string
 
@@ -60,6 +67,7 @@ func NewBuilder(opts ...Option) Builder {
 type Client struct {
 	registry  string
 	tag       string
+	network   string
 	functions map[string]BuildArgs
 }
 
@@ -88,9 +96,10 @@ func (c *Client) Build(ctx context.Context) ([]string, error) {
 		dir := path.Join(".", "build", fn)
 
 		builds[fn] = &dockerBuildOpts{
-			Image: image,
-			Dir:   dir,
-			Args:  args,
+			Image:   image,
+			Dir:     dir,
+			Args:    args,
+			Network: c.network,
 		}
 	}
 
@@ -114,9 +123,10 @@ func buildImage(b *dockerBuildOpts) error {
 }
 
 type dockerBuildOpts struct {
-	Image string
-	Dir   string
-	Args  BuildArgs
+	Image   string
+	Dir     string
+	Args    BuildArgs
+	Network string
 }
 
 // CmdArgs run this into nice pretty command line args
@@ -124,6 +134,9 @@ func (b *dockerBuildOpts) CmdArgs() []string {
 	args := []string{"docker", "build"}
 	args = append(args, b.Args.CmdArgs()...)
 	args = append(args, "-t", b.Image, b.Dir)
+	if len(b.Network) > 0 {
+		args = append(args, "--network", b.Network)
+	}
 	return args
 }
 

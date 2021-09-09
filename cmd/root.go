@@ -14,9 +14,11 @@ const (
 
 // Flags that are to be added to all commands.
 var (
-	yamlFile string
-	regex    string
-	filter   string
+	yamlFile  string
+	regex     string
+	filter    string
+	network   string
+	buildArgs []string
 )
 
 func init() {
@@ -24,6 +26,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&yamlFile, "yaml", "f", "", "Path to YAML file describing function(s)")
 	rootCmd.PersistentFlags().StringVarP(&regex, "regex", "", "", "Regex to match with function names in YAML file")
 	rootCmd.PersistentFlags().StringVarP(&filter, "filter", "", "", "Wildcard to match with function names in YAML file")
+
+	rootCmd.PersistentFlags().StringVarP(&network, "network", "", "", "The network to connect to")
+	rootCmd.PersistentFlags().StringSliceVarP(&buildArgs, "build-args", "", []string{}, "Wildcard to match with function names in YAML file")
 
 	// Set Bash completion options
 	validYAMLFilenames := []string{"yaml", "yml"}
