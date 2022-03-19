@@ -18,7 +18,7 @@ RUN go test $(go list ./... | grep -v /vendor/ | grep -v /template/|grep -v /bui
 
 RUN go build --ldflags "-s -w \
     -X github.com/contextcloud/ccb-cli/pkg/version.GitCommit=${GIT_COMMIT} \
-    -X github.com/contextcloud/ccb-cli/pkg/version.Version=${VERSION} \
+    -X github.com/contextcloud/ccb-cli/pkg/version.Version=${VERSION}" \
     -a -installsuffix cgo -o ccb cmd/ccb/main.go
 
 FROM gcr.io/cloud-builders/docker
