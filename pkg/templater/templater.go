@@ -27,9 +27,9 @@ func AddLocationOption(name, location string) func(*Client) {
 
 // Templater interface
 type Templater interface {
-	AddFunction(string, string, string)
-	Download(context.Context) ([]string, error)
-	Pack(context.Context) ([]string, error)
+	AddFunction(name string, template string)
+	Download(ctx context.Context) ([]string, error)
+	Pack(ctx context.Context) ([]string, error)
 }
 
 // NewTemplater will create a new templater
@@ -47,7 +47,6 @@ func NewTemplater(opts ...Option) Templater {
 
 type templateFunction struct {
 	Name     string
-	Engine   string
 	Template string
 }
 
@@ -58,16 +57,11 @@ type Client struct {
 }
 
 // AddFunction will add a name and template
-func (c *Client) AddFunction(name, engine, template string) {
-	e := engine
-	if len(e) == 0 {
-		e = "cloud"
-	}
-
-	c.functions = append(c.functions, templateFunction{name, e, template})
+func (c *Client) AddFunction(name, template string) {
+	c.functions = append(c.functions, templateFunction{name, template})
 }
 
-func (c *Client) getTemplate(engine, template string) string {
+func (c *Client) getTemplate(template string) string {
 	// get the source.!
 	loc, ok := c.templateLocations[template]
 	if !ok || len(loc) == 0 {
@@ -82,7 +76,7 @@ func (c *Client) getTemplate(engine, template string) string {
 		loc = loc[0 : len(loc)-1]
 	}
 
-	return fmt.Sprintf("%s/%s//%s", loc, engine, template)
+	return fmt.Sprintf("%s//%s", loc, template)
 }
 
 // Download will fetch in parallel
@@ -93,7 +87,7 @@ func (c *Client) Download(ctx context.Context) ([]string, error) {
 		if _, ok := templates[fn.Template]; ok {
 			continue
 		}
-		templates[fn.Template] = c.getTemplate(fn.Engine, fn.Template)
+		templates[fn.Template] = c.getTemplate(fn.Template)
 	}
 
 	// make a go channel!.

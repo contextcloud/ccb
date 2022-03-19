@@ -12,9 +12,9 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/Masterminds/sprig"
 
-	"github.com/contextcloud/ccb-cli/cmd/templates"
-	"github.com/contextcloud/ccb-cli/models"
-	"github.com/contextcloud/ccb-cli/spec"
+	"github.com/contextcloud/ccb-cli/pkg/models"
+	"github.com/contextcloud/ccb-cli/pkg/spec"
+	"github.com/contextcloud/ccb-cli/pkg/templates"
 
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
@@ -233,7 +233,7 @@ type gen struct {
 	fn   *spec.Function
 }
 
-func (g *gen) cloud() ([]string, error) {
+func (g *gen) Execute() ([]string, error) {
 	data := make(map[string]interface{})
 
 	namespace := g.fn.Namespace
@@ -375,93 +375,6 @@ func (g *gen) cloud() ([]string, error) {
 	}
 
 	return all, nil
-}
-
-func (g *gen) openfaas() ([]string, error) {
-	//read environment variables from the file
-	fileEnvironment, err := readFiles(g.fn.EnvironmentFile)
-	if err != nil {
-		return nil, err
-	}
-
-	//combine all environment variables
-	allEnvironment, envErr := compileEnvironment([]string{}, g.fn.Environment, fileEnvironment)
-	if envErr != nil {
-		return nil, envErr
-	}
-
-	var limits *models.FunctionResources
-	if g.fn.Limits != nil {
-		limits = &models.FunctionResources{
-			Memory: g.fn.Limits.Memory,
-			CPU:    g.fn.Limits.CPU,
-		}
-	}
-	var requests *models.FunctionResources
-	if g.fn.Requests != nil {
-		requests = &models.FunctionResources{
-			Memory: g.fn.Requests.Memory,
-			CPU:    g.fn.Requests.CPU,
-		}
-	}
-	var constraints []string
-	if g.fn.Constraints != nil {
-		constraints = *g.fn.Constraints
-	}
-
-	var environment *map[string]string
-	if len(allEnvironment) > 0 {
-		environment = &allEnvironment
-	}
-
-	var readOnlyRoot *bool = nil
-	if g.fn.ReadOnlyRootFilesystem {
-		readOnlyRoot = &g.fn.ReadOnlyRootFilesystem
-	}
-
-	spec := models.FunctionSpec{
-		Name:                   g.name,
-		Image:                  buildImageName(registry, g.name, tag),
-		Annotations:            g.fn.Annotations,
-		Labels:                 g.fn.Labels,
-		Secrets:                g.fn.Secrets,
-		Environment:            environment,
-		Constraints:            constraints,
-		Limits:                 limits,
-		Requests:               requests,
-		ReadOnlyRootFilesystem: readOnlyRoot,
-	}
-
-	namespace := g.fn.Namespace
-	if len(namespace) == 0 {
-		namespace = functionNamespace
-	}
-	manifest := models.Function{
-		TypeMeta: models.TypeMeta{
-			APIVersion: api,
-			Kind:       resourceKind,
-		},
-		ObjectMeta: models.ObjectMeta{
-			Name:      spec.Name,
-			Namespace: namespace,
-		},
-		Spec: spec,
-	}
-
-	out, err := yaml.Marshal(manifest)
-	if err != nil {
-		return nil, err
-	}
-	return []string{string(out)}, nil
-}
-
-func (g *gen) Execute() ([]string, error) {
-	switch strings.ToLower(g.fn.Engine) {
-	case "cloud":
-		return g.cloud()
-	default:
-		return g.openfaas()
-	}
 }
 
 func NewGen(box *rice.Box, name string, fn *spec.Function) *gen {

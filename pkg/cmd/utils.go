@@ -7,7 +7,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/contextcloud/ccb-cli/spec"
+	"github.com/contextcloud/ccb-cli/pkg/spec"
 )
 
 func readFiles(files []string) (map[string]string, error) {

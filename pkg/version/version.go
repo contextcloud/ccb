@@ -3,7 +3,8 @@ package version
 const UserAgent = "Context Cloud CLI"
 
 var (
-	Version, GitCommit string
+	Version   string
+	GitCommit string
 )
 
 func BuildVersion() string {

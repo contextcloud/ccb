@@ -47,9 +47,6 @@ type Function struct {
 	// Name of deployed function
 	Name string `yaml:"-"`
 
-	// Engine either openfaas or cloud
-	Engine string `yaml:"engine"`
-
 	Language string `yaml:"lang"`
 
 	// Image Docker image name

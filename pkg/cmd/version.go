@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/contextcloud/ccb-cli/version"
+	"github.com/contextcloud/ccb-cli/pkg/version"
 )
 
 // GitCommit injected at build-time

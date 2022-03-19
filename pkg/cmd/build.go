@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/contextcloud/ccb-cli/builder"
-	"github.com/contextcloud/ccb-cli/spec"
+	"github.com/contextcloud/ccb-cli/pkg/builder"
+	"github.com/contextcloud/ccb-cli/pkg/spec"
 
 	"github.com/spf13/cobra"
 )

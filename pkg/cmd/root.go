@@ -66,3 +66,7 @@ func Execute(customArgs []string) {
 		os.Exit(1)
 	}
 }
+
+func NewRootCmd() *cobra.Command {
+	return rootCmd
+}

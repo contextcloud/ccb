@@ -1,4 +1,4 @@
-FROM golang:1.14 as builder
+FROM golang:1.18 as builder
 
 ENV GO111MODULE=off
 ENV CGO_ENABLED=0
@@ -17,10 +17,9 @@ RUN go generate ./...
 RUN go test $(go list ./... | grep -v /vendor/ | grep -v /template/|grep -v /build/|grep -v /sample/) -cover
 
 RUN go build --ldflags "-s -w \
-    -X github.com/contextcloud/ccb-cli/version.GitCommit=${GIT_COMMIT} \
-    -X github.com/contextcloud/ccb-cli/version.Version=${VERSION} \
-    -X github.com/contextcloud/ccb-cli/commands.Platform=x86_64" \
-    -a -installsuffix cgo -o ccb cli/main.go
+    -X github.com/contextcloud/ccb-cli/pkg/version.GitCommit=${GIT_COMMIT} \
+    -X github.com/contextcloud/ccb-cli/pkg/version.Version=${VERSION} \
+    -a -installsuffix cgo -o ccb cmd/ccb/main.go
 
 FROM gcr.io/cloud-builders/docker
 

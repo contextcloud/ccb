@@ -1,0 +1,23 @@
+provider:
+  version: 0.1
+
+functions:
+  assets:
+    template: golang-http-handler
+    annotations:
+      example: eg
+    build_args:
+      LDFLAGS: "-w -s -extldflags '-static -pthread'"
+    environment:
+      EXAMPLE: eg
+    secrets:
+      - assets
+
+  profile:
+    template: golang-http-handler
+    annotations:
+      example: eg
+    environment:
+      EXAMPLE: eg
+    secrets:
+      - profile
