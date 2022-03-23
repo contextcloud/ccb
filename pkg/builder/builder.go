@@ -86,6 +86,8 @@ func (c *Client) imageName(name string) string {
 }
 
 func (c *Client) Build(ctx context.Context) ([]string, error) {
+	basePath := path.Join(".", ".ccb", "build")
+
 	// build a list of functions
 	builds := make(map[string]*dockerBuildOpts)
 	for fn, args := range c.functions {
@@ -93,7 +95,7 @@ func (c *Client) Build(ctx context.Context) ([]string, error) {
 		image := c.imageName(fn)
 
 		// what's the dir?
-		dir := path.Join(".", "build", fn)
+		dir := path.Join(basePath, fn)
 
 		builds[fn] = &dockerBuildOpts{
 			Image:   image,

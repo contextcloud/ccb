@@ -1,8 +1,4 @@
 /ccb-cli
 /ccb
 
-/build
-/template
-
-templater/build
-templater/template
+.ccb

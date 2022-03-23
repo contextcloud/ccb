@@ -1,0 +1,45 @@
+provider:
+  version: 0.2
+
+functions:
+  assets_1:
+    name: assets
+    version: 0.1
+    template: golang-http-handler
+    annotations:
+      example: eg
+    build_args:
+      LDFLAGS: "-w -s -extldflags '-static -pthread'"
+    env:
+      EXAMPLE: eg
+    envs:
+      - .env/common
+    secrets:
+      - .secrets/assets
+
+  assets_2:
+    name: assets
+    version: 0.2
+    template: golang-http-handler
+    annotations:
+      example: eg
+    build_args:
+      LDFLAGS: "-w -s -extldflags '-static -pthread'"
+    env:
+      EXAMPLE: eg
+    envs:
+      - .env/common
+    secrets:
+      - .secrets/assets
+
+  profile:
+    template: golang-http-handler
+    version: 0.1
+    annotations:
+      example: eg
+    env:
+      EXAMPLE: eg
+    envs:
+      - .env/common
+    secrets:
+      - .secrets/profile

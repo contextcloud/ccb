@@ -6,37 +6,25 @@ import (
 	"testing"
 )
 
-func Test_Can_Download(t *testing.T) {
-	err := download("github.com/contextcloud/templates//golang", "golang")
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func Test_Pack(t *testing.T) {
-	err := pack("golang", "example", nil)
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func Test_Templater_Pack(t *testing.T) {
-	templater := NewTemplater()
-	templater.AddFunction("example", "golang")
+	ctx := context.TODO()
 
-	_, err := templater.Download(context.TODO())
+	templater := NewTemplater("./example")
+	templater.AddFunction("assets", "golang")
+
+	_, err := templater.Download(ctx)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	r, err := templater.Pack(context.TODO())
+	r, err := templater.Pack(ctx)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	expected := []string{
-		"example",
+		"assets",
 	}
 	if !reflect.DeepEqual(r, expected) {
 		t.Errorf("Expect %v, Got %v", expected, r)

@@ -3,26 +3,36 @@ package templater
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/denormal/go-gitignore"
 	"github.com/hashicorp/go-getter"
-	"github.com/hashicorp/go-safetemp"
+	cp "github.com/otiai10/copy"
 	"golang.org/x/sync/errgroup"
 )
 
 const defaultTemplateLocation = "github.com/contextcloud/templates"
+const templatesDir = "templates"
+const buildDir = "build"
+const functionDir = "function"
 
-// Option options for our templater
-type Option func(*Client)
-
-// AddLocationOption add locations for partical templates
-func AddLocationOption(name, location string) func(*Client) {
-	return func(c *Client) {
-		c.templateLocations[name] = location
-	}
+type templateFunction struct {
+	Name     string
+	Template string
+}
+type downloadJob struct {
+	source   string
+	template string
+}
+type downloadResult struct {
+	source   string
+	template string
+}
+type packResult struct {
+	functionName string
+	template     string
 }
 
 // Templater interface
@@ -33,37 +43,49 @@ type Templater interface {
 }
 
 // NewTemplater will create a new templater
-func NewTemplater(opts ...Option) Templater {
-	c := &Client{
+func NewTemplater(workingDir string) Templater {
+	c := &templater{
+		workingDir:        workingDir,
 		templateLocations: make(map[string]string),
-	}
-
-	for _, opt := range opts {
-		opt(c)
 	}
 
 	return c
 }
 
-type templateFunction struct {
-	Name     string
-	Template string
-}
-
-// Client struct
-type Client struct {
+type templater struct {
+	workingDir        string
 	templateLocations map[string]string
 	functions         []templateFunction
 }
 
 // AddFunction will add a name and template
-func (c *Client) AddFunction(name, template string) {
-	c.functions = append(c.functions, templateFunction{name, template})
+func (t *templater) AddFunction(name, template string) {
+	t.functions = append(t.functions, templateFunction{name, template})
 }
 
-func (c *Client) getTemplate(template string) string {
+// Download will fetch in parallel
+func (t *templater) Download(ctx context.Context) ([]string, error) {
+	// build a list of functions
+	templates := make(map[string]string)
+	for _, fn := range t.functions {
+		if _, ok := templates[fn.Template]; ok {
+			continue
+		}
+		templates[fn.Template] = t.getTemplate(fn.Template)
+	}
+
+	// make a go channel!.
+	return t.downloadAll(ctx, templates)
+}
+
+// Pack will create buildable functions
+func (t *templater) Pack(ctx context.Context) ([]string, error) {
+	return t.packAll(ctx, t.functions)
+}
+
+func (t *templater) getTemplate(template string) string {
 	// get the source.!
-	loc, ok := c.templateLocations[template]
+	loc, ok := t.templateLocations[template]
 	if !ok || len(loc) == 0 {
 		loc = defaultTemplateLocation
 	}
@@ -79,38 +101,7 @@ func (c *Client) getTemplate(template string) string {
 	return fmt.Sprintf("%s//%s", loc, template)
 }
 
-// Download will fetch in parallel
-func (c *Client) Download(ctx context.Context) ([]string, error) {
-	// build a list of functions
-	templates := make(map[string]string)
-	for _, fn := range c.functions {
-		if _, ok := templates[fn.Template]; ok {
-			continue
-		}
-		templates[fn.Template] = c.getTemplate(fn.Template)
-	}
-
-	// make a go channel!.
-	os.RemoveAll(path.Join(".", "template"))
-	return downloadAll(ctx, templates)
-}
-
-// Pack will create buildable functions
-func (c *Client) Pack(ctx context.Context) ([]string, error) {
-	os.RemoveAll(path.Join(".", "build"))
-	return packAll(ctx, c.functions)
-}
-
-type downloadJob struct {
-	source   string
-	template string
-}
-type downloadResult struct {
-	source   string
-	template string
-}
-
-func downloadAll(ctx context.Context, templates map[string]string) ([]string, error) {
+func (t *templater) downloadAll(ctx context.Context, templates map[string]string) ([]string, error) {
 	g, ctx := errgroup.WithContext(ctx)
 	jobs := make(chan downloadJob)
 
@@ -132,7 +123,7 @@ func downloadAll(ctx context.Context, templates map[string]string) ([]string, er
 	for i := 0; i < numDigesters; i++ {
 		g.Go(func() error {
 			for job := range jobs {
-				err := download(job.source, job.template)
+				err := t.download(job.source, job.template)
 				if err != nil {
 					return err
 				}
@@ -160,25 +151,17 @@ func downloadAll(ctx context.Context, templates map[string]string) ([]string, er
 	return out, nil
 }
 
-// pullTemplate using go-getter
-func download(repository, template string) error {
-	log.Printf("Repository: %s: %s", repository, template)
-
+func (t *templater) download(repository, template string) error {
 	cli := &getter.Client{
 		Mode: getter.ClientModeDir,
 		Src:  repository,
-		Dst:  fmt.Sprintf("template/%s", template),
+		Dst:  fmt.Sprintf(".ccb/%s/%s", templatesDir, template),
 		Pwd:  ".",
 	}
 	return cli.Get()
 }
 
-type packResult struct {
-	functionName string
-	template     string
-}
-
-func packAll(ctx context.Context, templates []templateFunction) ([]string, error) {
+func (t *templater) packAll(ctx context.Context, templates []templateFunction) ([]string, error) {
 	g, ctx := errgroup.WithContext(ctx)
 	jobs := make(chan templateFunction)
 
@@ -200,7 +183,7 @@ func packAll(ctx context.Context, templates []templateFunction) ([]string, error
 	for i := 0; i < numDigesters; i++ {
 		g.Go(func() error {
 			for job := range jobs {
-				err := pack(job.Template, job.Name, nil)
+				err := t.pack(job.Template, job.Name)
 				if err != nil {
 					return err
 				}
@@ -228,57 +211,45 @@ func packAll(ctx context.Context, templates []templateFunction) ([]string, error
 	return out, nil
 }
 
-func pack(templateName, fnName string, args map[string]string) error {
-	ctx := context.Background()
+func (t *templater) pack(templateName, fnName string) error {
+	destination := path.Join(".", ".ccb", buildDir, fnName)
+	functionDest := path.Join(destination, functionDir)
+	templateSrc := path.Join(".", ".ccb", templatesDir, templateName)
+	functionSrc := path.Join(t.workingDir, fnName)
+	templateIgnore := path.Join(templateSrc, functionDir)
+	functionIgnore := path.Join(functionSrc, ".gitignore")
 
-	realDst := path.Join(".", "build", fnName)
-	tmpl := path.Join(".", "template", templateName)
-
-	td, tdcloser, err := safetemp.Dir("", "ccb-cli")
-	if err != nil {
+	// match a file against a particular .gitignore
+	ignore, err := gitignore.NewFromFile(functionIgnore)
+	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
-	defer tdcloser.Close()
-
-	tmplFn := path.Join(td, "function")
-	// delete tmp dir
-	if err := os.RemoveAll(td); err != nil {
-		return fmt.Errorf("Could not delete %s %w", td, err)
-	}
-	// make tmp dir
-	if err := os.MkdirAll(td, 0755); err != nil {
-		return fmt.Errorf("Could not create temp: %s %w", td, err)
-	}
-	// copy the template.
-	if err := copyDir(ctx, td, tmpl, false); err != nil {
-		return fmt.Errorf("Could not copy template %s to temp %s: %w", tmpl, td, err)
-	}
-	// delete the function
-	if err := os.RemoveAll(tmplFn); err != nil {
-		return fmt.Errorf("Could not delete function example in temp: %w", err)
+	var skip func(src string) (bool, error)
+	if ignore != nil {
+		skip = func(src string) (bool, error) {
+			m := ignore.Match(src)
+			return m != nil && m.Ignore(), nil
+		}
 	}
 
-	// TODO find all templates and execute them!
-
-	// make the function dir
-	if err := os.MkdirAll(tmplFn, 0755); err != nil {
-		return fmt.Errorf("Could not create function dir in temp: %w", err)
-	}
-	if err := copyDir(ctx, tmplFn, fnName, false); err != nil {
-		return fmt.Errorf("Could not copy function to temp: %w", err)
+	// remove all
+	if err := os.RemoveAll(destination); err != nil {
+		return err
 	}
 
-	// move it!
-	// delete the old
-	if err := os.RemoveAll(realDst); err != nil {
-		return fmt.Errorf("Could not clean pack destination: %w", err)
+	if err := cp.Copy(templateSrc, destination, cp.Options{
+		Skip: func(src string) (bool, error) {
+			return strings.EqualFold(src, templateIgnore), nil
+		},
+	}); err != nil {
+		return err
 	}
-	// make the real dir
-	if err := os.MkdirAll(realDst, 0755); err != nil {
-		return fmt.Errorf("Could not create pack destination: %w", err)
+
+	if err := cp.Copy(functionSrc, functionDest, cp.Options{
+		Skip: skip,
+	}); err != nil {
+		return err
 	}
-	if err := copyDir(ctx, realDst, td, false); err != nil {
-		return fmt.Errorf("Could not copy pack to dest: %w", err)
-	}
+
 	return nil
 }
