@@ -43,8 +43,8 @@ func newGenerateCommand() *cobra.Command {
 		Short: "generates Kubernetes Manifests",
 		Long:  `generates Kubernetes Manifest files using a spec provided in yaml`,
 		Example: `
-		ccb generate -f https://domain/path/service.yml
-		ccb generate -f ./service.yml`,
+		ccb generate -f https://domain/path/stack.yml
+		ccb generate -f ./stack.yml`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGenerate(env, options, args)
 		},
@@ -81,8 +81,8 @@ func runGenerate(env *print.Env, opts generateOptions, args []string) error {
 		return nil
 	}
 
-	de := deployer.NewManager(opts.workingDir, opts.namespace, opts.registry, opts.tag)
-	for _, fn := range fns {
+	all := make([]*deployer.Function, len(fns))
+	for i, fn := range fns {
 		f := &deployer.Function{
 			Key:      fn.Key,
 			Name:     fn.Name,
@@ -92,12 +92,14 @@ func runGenerate(env *print.Env, opts generateOptions, args []string) error {
 			Secrets:  fn.Secrets,
 			Limits:   fn.Limits,
 			Requests: fn.Requests,
+			Routes:   fn.Routes,
 		}
-
-		de.AddFunction(f)
+		all[i] = f
 	}
 
-	manifests, err := de.Generate()
+	de := deployer.NewManager(opts.workingDir, opts.namespace)
+
+	manifests, err := de.GenerateFunctions(opts.registry, opts.tag, all)
 	if err != nil {
 		return err
 	}

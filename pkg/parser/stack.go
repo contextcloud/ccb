@@ -8,6 +8,7 @@ import (
 )
 
 type Stack interface {
+	GetRoutes(filters ...string) ([]*Route, error)
 	GetFunctions(filters ...string) ([]*Function, error)
 }
 
@@ -27,6 +28,27 @@ func (s *stack) isMatch(name string, filters []string) bool {
 	}
 
 	return false
+}
+
+func (s *stack) GetRoutes(filters ...string) ([]*Route, error) {
+	var routes []*Route
+
+	// filter using input
+	for k, raw := range s.raw.Routes {
+		route, err := newRoute(k, raw)
+		if err != nil {
+			return nil, err
+		}
+
+		if !s.isMatch(route.Key, filters) {
+			continue
+		}
+
+		routes = append(routes, route)
+	}
+
+	return routes, nil
+
 }
 
 func (s *stack) GetFunctions(filters ...string) ([]*Function, error) {

@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Namespace }}
   labels: 
     release: {{ .Name }}
-    version: {{ .Version }}
+    version: {{ .Version | quote }}
 {{- if $.Annotations }}
   annotations:
     {{- toYaml .Annotations | nindent 4 }}        
@@ -20,4 +20,4 @@ spec:
       port: 8082
   selector:
     release: {{ .Name }}
-    version: {{ .Version }}
+    version: {{ .Version | quote }}

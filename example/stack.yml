@@ -1,6 +1,18 @@
 provider:
   version: 0.2
 
+routes:
+  democom: 
+    fqdn: demo.com
+    includes:
+      - namespace: other 
+        name: api2
+        prefix: /api/profile
+        headers:
+        - name: version
+          op: equal
+          values: v2
+
 functions:
   assets_1:
     name: assets
@@ -16,6 +28,9 @@ functions:
       - .env/common
     secrets:
       - .secrets/assets
+    routes:
+    - name: api
+      prefix: /api/assets
 
   assets_2:
     name: assets
@@ -31,6 +46,13 @@ functions:
       - .env/common
     secrets:
       - .secrets/assets
+    routes:
+    - name: api2
+      prefix: /api/assets
+      headers:
+      - name: version
+        op: equal
+        values: v2
 
   profile:
     template: golang-http-handler
@@ -43,3 +65,10 @@ functions:
       - .env/common
     secrets:
       - .secrets/profile
+    routes:
+    - name: api2
+      prefix: /api/profile
+      headers:
+      - name: version
+        op: equal
+        values: v2

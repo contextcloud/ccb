@@ -16,9 +16,11 @@ func Test_Build(t *testing.T) {
 		return
 	}
 
-	manager := NewManager("../../example", "default", "", "latest")
+	manager := NewManager("../../example", "default")
 	fns, err := stack.GetFunctions()
-	for _, fn := range fns {
+
+	all := make([]*Function, len(fns))
+	for i, fn := range fns {
 		f := &Function{
 			Key:      fn.Key,
 			Name:     fn.Name,
@@ -28,11 +30,12 @@ func Test_Build(t *testing.T) {
 			Secrets:  fn.Secrets,
 			Limits:   fn.Limits,
 			Requests: fn.Requests,
+			Routes:   fn.Routes,
 		}
-		manager.AddFunction(f)
+		all[i] = f
 	}
 
-	manifests, err := manager.Generate()
+	manifests, err := manager.GenerateFunctions("", "latest", all)
 	if err != nil {
 		t.Error(err)
 		return

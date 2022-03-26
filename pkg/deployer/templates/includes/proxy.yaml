@@ -1,0 +1,19 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: wild-inflow-pro
+  namespace: inflow-tech--routes
+spec:
+  virtualhost:
+    fqdn: '*.inflow.pro'
+    tls:
+      secretName: wild-inflow-pro-tls
+  includes:
+  - conditions:
+    - prefix: /
+    name: wild-inflow-pro
+    namespace: inflow-tech--ui
+  - conditions:
+    - prefix: /api
+    name: routes
+    namespace: inflow-tech--api
