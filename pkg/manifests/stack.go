@@ -1,9 +1,23 @@
 package manifests
 
+// FunctionResources is used to set CPU and memory limits and requests
+type FunctionResources struct {
+	Memory string `yaml:"memory,omitempty"`
+	CPU    string `yaml:"cpu,omitempty"`
+}
+
+// RouterHeader is used to set the header for the router
+type RouteHeader struct {
+	Name     string `yaml:"name"`
+	Operator string `yaml:"op"`
+	Value    string `yaml:"value"`
+}
+
 // Stack is a stack of functions
 type Stack struct {
 	Provider  Provider            `yaml:"provider,omitempty"`
 	Functions map[string]Function `yaml:"functions,omitempty"`
+	Routes    map[string]Route    `yaml:"routes,omitempty"`
 }
 
 // Provider for the FaaS set of functions.
@@ -11,13 +25,14 @@ type Provider struct {
 	Version string `yaml:"version,omitempty"`
 }
 
-// FunctionResources is used to set CPU and memory limits and requests
-type FunctionResources struct {
-	Memory string `yaml:"memory,omitempty"`
-	CPU    string `yaml:"cpu,omitempty"`
+// FunctionRoute is a route to a function
+type FunctionRoute struct {
+	Name    string        `yaml:"name,omitempty"`
+	Prefix  string        `yaml:"prefix,omitempty"`
+	Headers []RouteHeader `yaml:"headers,omitempty"`
 }
 
-// Function as deployed or built on FaaS
+// Function as deployed or built
 type Function struct {
 	Name         string             `yaml:"name"`
 	Version      string             `yaml:"version"`
@@ -32,4 +47,19 @@ type Function struct {
 	Replicas     *int               `yaml:"replicas"`
 	Limits       *FunctionResources `yaml:"limits"`
 	Requests     *FunctionResources `yaml:"requests"`
+	Routes       []FunctionRoute    `yaml:"routes,omitempty"`
+}
+
+// RouteInclude is a route to a namespace
+type RouteInclude struct {
+	Namespace string        `yaml:"namespace,omitempty"`
+	Name      string        `yaml:"name,omitempty"`
+	Prefix    string        `yaml:"prefix,omitempty"`
+	Headers   []RouteHeader `yaml:"headers,omitempty"`
+}
+
+type Route struct {
+	Name     string         `yaml:"name,omitempty"`
+	FQDN     string         `yaml:"fqdn,omitempty"`
+	Includes []RouteInclude `yaml:"includes,omitempty"`
 }

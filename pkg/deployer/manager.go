@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"strings"
 	"text/template"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -13,15 +14,15 @@ import (
 
 var (
 	// ErrNoMetadata when a file does not contain metadata
-	ErrNoMetadata = errors.New("No metadata found in file")
+	ErrNoMetadata = errors.New("no metadata found in file")
 	// ErrNoSpec when a file does not contain spec
-	ErrNoSpec = errors.New("No spec found in file")
+	ErrNoSpec = errors.New("no spec found in file")
 	// ErrInvalidKind kind is not support
-	ErrInvalidKind = errors.New("Unsupported kind")
+	ErrInvalidKind = errors.New("unsupported kind")
 	// ErrInvalidNamespace when two namespaces don't match
-	ErrInvalidNamespace = errors.New("Namespaces don't match")
+	ErrInvalidNamespace = errors.New("namespaces don't match")
 	// ErrNoConfig when the config isn't supplied
-	ErrNoConfig = errors.New("No config supplied")
+	ErrNoConfig = errors.New("no config supplied")
 )
 
 var livenessProbe = &Probe{
@@ -42,17 +43,15 @@ var readinessProbe = &Probe{
 }
 
 type Manager interface {
-	AddFunction(fn *Function)
-	Generate() (Manifests, error)
+	GenerateRoutes(routes []*Route) (Manifests, error)
+	GenerateFunctions(registry string, tag string, fn []*Function) (Manifests, error)
 }
 
 type manager struct {
 	box        *rice.Box
 	workingDir string
 	namespace  string
-	registry   string
-	tag        string
-	functions  []*Function
+	funcMap    template.FuncMap
 }
 
 func (m *manager) mergeEnv(all map[string]Environment, files []string, env map[string]string) (map[string]string, error) {
@@ -114,7 +113,7 @@ func (m *manager) executeFunction(dir string, key string, data map[string]interf
 
 		// parse the file
 		tmpl, err := template.New(path).
-			Funcs(templates.FuncMap()).
+			Funcs(m.funcMap).
 			Parse(tmplString)
 		if err != nil {
 			return err
@@ -138,18 +137,21 @@ func (m *manager) executeFunction(dir string, key string, data map[string]interf
 	return out, nil
 }
 
-func (m *manager) AddFunction(fn *Function) {
-	m.functions = append(m.functions, fn)
-}
-
-func (m *manager) Generate() (Manifests, error) {
+func (m *manager) GenerateFunctions(registry string, tag string, fns []*Function) (Manifests, error) {
 	var all Manifests
 
+	routes := make(map[string][]FunctionRoute)
 	secrets := make(map[string]*Secret)
 	envs := make(map[string]Environment)
 
 	// load up the secrets and environments
-	for _, fn := range m.functions {
+	for _, fn := range fns {
+		for _, r := range fn.Routes {
+			routes[r.Name] = append(routes[r.Name], FunctionRoute{
+				Key:   fn.Key,
+				Route: r,
+			})
+		}
 		for _, secret := range fn.Secrets {
 			// get the path
 			name, err := utils.YamlFile(m.workingDir, secret)
@@ -196,7 +198,7 @@ func (m *manager) Generate() (Manifests, error) {
 		}
 	}
 
-	for _, fn := range m.functions {
+	for _, fn := range fns {
 		// get environment files.
 		env, err := m.mergeEnv(envs, fn.Envs, fn.Env)
 		if err != nil {
@@ -213,13 +215,13 @@ func (m *manager) Generate() (Manifests, error) {
 			"Name":           fn.Name,
 			"Version":        fn.Version,
 			"Namespace":      m.namespace,
-			"Image":          ImageName(m.registry, fn.Key, m.tag),
+			"Image":          ImageName(registry, fn.Key, tag),
 			"LivenessProbe":  livenessProbe,
 			"ReadinessProbe": readinessProbe,
 			"Environment":    env,
 			"Secrets":        secrets,
 		}
-		out, err := m.executeFunction("deployment", fn.Key, data)
+		out, err := m.executeFunction("function", fn.Key, data)
 		if err != nil {
 			return nil, err
 		}
@@ -235,17 +237,62 @@ func (m *manager) Generate() (Manifests, error) {
 		})
 	}
 
+	for name, r := range routes {
+		if len(r) == 0 {
+			continue
+		}
+
+		data := map[string]interface{}{
+			"Key":       "routes--" + name,
+			"Namespace": m.namespace,
+			"Routes":    r,
+		}
+		out, err := m.executeFunction("proxy", name, data)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, out...)
+
+	}
+
 	return all, nil
 }
 
-func NewManager(workingDir string, namespace string, registry string, tag string) Manager {
+func (m *manager) GenerateRoutes(routes []*Route) (Manifests, error) {
+	var all Manifests
+
+	for _, r := range routes {
+		data := map[string]interface{}{
+			"Key":       r.Key,
+			"Namespace": m.namespace,
+			"FQDN":      r.FQDN,
+			"Includes":  r.Includes,
+		}
+		out, err := m.executeFunction("includes", "includes", data)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, out...)
+
+	}
+
+	return all, nil
+}
+
+func NewManager(workingDir string, namespace string) Manager {
+	prefix := ""
+	indexOf := strings.Index(namespace, "--")
+	if indexOf > -1 {
+		prefix = namespace[0 : indexOf+2]
+	}
+
 	box := templates.NewBox()
+	funcMap := templates.GetFuncMaps(prefix)
 
 	return &manager{
 		box:        box,
 		workingDir: workingDir,
 		namespace:  namespace,
-		registry:   registry,
-		tag:        tag,
+		funcMap:    funcMap,
 	}
 }

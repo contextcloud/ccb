@@ -11,62 +11,106 @@ func init() {
 
 	// define files
 	file3 := &embedded.EmbeddedFile{
-		Filename:    "deployment/deployment.yaml",
-		FileModTime: time.Unix(1648038107, 0),
+		Filename:    "function/deployment.yaml",
+		FileModTime: time.Unix(1648253706, 0),
 
-		Content: string("apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    release: {{ .Name }}\n    version: {{ .Version }}\nspec:\n{{- if $.Replicas }}\n  replicas: {{ .Replicas }}\n{{- end }}\n  revisionHistoryLimit: 10\n  selector:\n    matchLabels:\n      release: {{ .Name }}\n      version: {{ .Version }}\n  template:\n    metadata:\n      name: {{ .Key }}\n      labels:\n        release: {{ .Name }}\n        version: {{ .Version }}\n        {{- with .Labels }}\n        {{- toYaml . | nindent 8 }}\n        {{- end }}\n    spec:\n      containers:\n      - name: {{ .Name }}\n        image: {{ .Image }}\n{{- if $.Secrets }}\n        envFrom:\n        {{- range $key, $value := .Secrets }}\n        - secretRef:\n            name: {{ $value }}\n        {{- end }}\n{{- end }}\n{{- if $.Environment }}\n        env:\n        {{- range $key, $value := .Environment }}\n        - name: {{ $key }}\n          value: {{ $value | quote }}\n        {{- end }}\n{{- end }}\n        ports:\n        - name: http\n          containerPort: 8080\n        - name: metrics\n          containerPort: 8081\n        - name: health\n          containerPort: 8082\n{{- if $.LivenessProbe.Enabled }}\n        livenessProbe:\n          httpGet:\n            path: {{ $.LivenessProbe.Path }}\n            port: {{ $.LivenessProbe.Port }}\n            scheme: HTTP\n          initialDelaySeconds: {{ $.LivenessProbe.InitialDelaySeconds }}\n          timeoutSeconds: {{ $.LivenessProbe.TimeoutSeconds }}\n          periodSeconds: {{ $.LivenessProbe.PeriodSeconds }}\n{{- end }}\n{{- if $.ReadinessProbe.Enabled }}\n        readinessProbe:\n          httpGet:\n            path: {{ $.ReadinessProbe.Path }}\n            port: {{ $.ReadinessProbe.Port }}\n            scheme: HTTP\n          initialDelaySeconds: {{ $.ReadinessProbe.InitialDelaySeconds }}\n          timeoutSeconds: {{ $.ReadinessProbe.TimeoutSeconds }}\n          periodSeconds: {{ $.ReadinessProbe.PeriodSeconds }}\n{{- end }}\n{{- if or $.Limits $.Requests }}\n        resources:\n{{- if $.Limits }}\n          limits:\n            {{- range $key, $value := .Limits }}\n            {{ $key }}: {{ $value }}\n            {{- end }}\n{{- end }}\n{{- if $.Requests }}\n          requests:\n            {{- range $key, $value := .Requests }}\n            {{ $key }}: {{ $value }}\n            {{- end }}\n{{- end }}\n{{- end }}\n{{- if $.ReadOnlyRootFilesystem }}\n        securityContext:\n          readOnlyRootFilesystem: {{ $.ReadOnlyRootFilesystem }}\n{{- end }}\n        volumeMounts:\n        - mountPath: /tmp\n          name: temp\n{{- if $.Secrets }}\n      {{- range $key, $value := .Secrets }}\n        - mountPath: /var/secrets\n          name: {{ $value }}\n          readOnly: true\n      {{- end }}\n{{- end }}\n{{- if $.NodeSelector }}\n      nodeSelector:\n        {{- range $key, $value := .NodeSelector }}\n        {{ $key }}: {{ $value }}\n        {{- end }}\n{{- end }}\n      volumes:\n      - emptyDir: {}\n        name: temp\n{{- if $.Secrets }}\n    {{- range $key, $value := .Secrets }}\n      - name: {{ $value }}\n        projected:\n          defaultMode: 420\n          sources:\n          - secret:\n              name: {{ $value }}\n    {{- end }}\n{{- end }}"),
+		Content: string("apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    release: {{ .Name }}\n    version: {{ .Version | quote }}\nspec:\n{{- if $.Replicas }}\n  replicas: {{ .Replicas }}\n{{- end }}\n  revisionHistoryLimit: 10\n  selector:\n    matchLabels:\n      release: {{ .Name }}\n      version: {{ .Version | quote }}\n  template:\n    metadata:\n      name: {{ .Key }}\n      labels:\n        release: {{ .Name }}\n        version: {{ .Version | quote }}\n        {{- with .Labels }}\n        {{- toYaml . | nindent 8 }}\n        {{- end }}\n    spec:\n      containers:\n      - name: {{ .Name }}\n        image: {{ .Image }}\n{{- if $.Secrets }}\n        envFrom:\n        {{- range $key, $value := .Secrets }}\n        - secretRef:\n            name: {{ $value }}\n        {{- end }}\n{{- end }}\n{{- if $.Environment }}\n        env:\n        {{- range $key, $value := .Environment }}\n        - name: {{ $key }}\n          value: {{ $value | quote }}\n        {{- end }}\n{{- end }}\n        ports:\n        - name: http\n          containerPort: 8080\n        - name: metrics\n          containerPort: 8081\n        - name: health\n          containerPort: 8082\n{{- if $.LivenessProbe.Enabled }}\n        livenessProbe:\n          httpGet:\n            path: {{ $.LivenessProbe.Path }}\n            port: {{ $.LivenessProbe.Port }}\n            scheme: HTTP\n          initialDelaySeconds: {{ $.LivenessProbe.InitialDelaySeconds }}\n          timeoutSeconds: {{ $.LivenessProbe.TimeoutSeconds }}\n          periodSeconds: {{ $.LivenessProbe.PeriodSeconds }}\n{{- end }}\n{{- if $.ReadinessProbe.Enabled }}\n        readinessProbe:\n          httpGet:\n            path: {{ $.ReadinessProbe.Path }}\n            port: {{ $.ReadinessProbe.Port }}\n            scheme: HTTP\n          initialDelaySeconds: {{ $.ReadinessProbe.InitialDelaySeconds }}\n          timeoutSeconds: {{ $.ReadinessProbe.TimeoutSeconds }}\n          periodSeconds: {{ $.ReadinessProbe.PeriodSeconds }}\n{{- end }}\n{{- if or $.Limits $.Requests }}\n        resources:\n{{- if $.Limits }}\n          limits:\n            {{- range $key, $value := .Limits }}\n            {{ $key }}: {{ $value }}\n            {{- end }}\n{{- end }}\n{{- if $.Requests }}\n          requests:\n            {{- range $key, $value := .Requests }}\n            {{ $key }}: {{ $value }}\n            {{- end }}\n{{- end }}\n{{- end }}\n{{- if $.ReadOnlyRootFilesystem }}\n        securityContext:\n          readOnlyRootFilesystem: {{ $.ReadOnlyRootFilesystem }}\n{{- end }}\n        volumeMounts:\n        - mountPath: /tmp\n          name: temp\n{{- if $.Secrets }}\n      {{- range $key, $value := .Secrets }}\n        - mountPath: /var/secrets\n          name: {{ $value }}\n          readOnly: true\n      {{- end }}\n{{- end }}\n{{- if $.NodeSelector }}\n      nodeSelector:\n        {{- range $key, $value := .NodeSelector }}\n        {{ $key }}: {{ $value }}\n        {{- end }}\n{{- end }}\n      volumes:\n      - emptyDir: {}\n        name: temp\n{{- if $.Secrets }}\n    {{- range $key, $value := .Secrets }}\n      - name: {{ $value }}\n        projected:\n          defaultMode: 420\n          sources:\n          - secret:\n              name: {{ $value }}\n    {{- end }}\n{{- end }}"),
 	}
 	file4 := &embedded.EmbeddedFile{
-		Filename:    "deployment/service.yaml",
-		FileModTime: time.Unix(1647775676, 0),
+		Filename:    "function/service.yaml",
+		FileModTime: time.Unix(1648253706, 0),
 
-		Content: string("apiVersion: v1\nkind: Service\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    release: {{ .Name }}\n    version: {{ .Version }}\n{{- if $.Annotations }}\n  annotations:\n    {{- toYaml .Annotations | nindent 4 }}        \n{{- end }}\nspec:\n  ports:\n    - name: http\n      port: 8080\n    - name: metrics\n      port: 8081\n    - name: health\n      port: 8082\n  selector:\n    release: {{ .Name }}\n    version: {{ .Version }}"),
+		Content: string("apiVersion: v1\nkind: Service\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    release: {{ .Name }}\n    version: {{ .Version | quote }}\n{{- if $.Annotations }}\n  annotations:\n    {{- toYaml .Annotations | nindent 4 }}        \n{{- end }}\nspec:\n  ports:\n    - name: http\n      port: 8080\n    - name: metrics\n      port: 8081\n    - name: health\n      port: 8082\n  selector:\n    release: {{ .Name }}\n    version: {{ .Version | quote }}"),
 	}
-	file5 := &embedded.EmbeddedFile{
-		Filename:    "templates.go",
-		FileModTime: time.Unix(1647774971, 0),
+	file6 := &embedded.EmbeddedFile{
+		Filename:    "includes/certificate.yaml",
+		FileModTime: time.Unix(1648254194, 0),
 
-		Content: string("//go:generate rice embed-go\n\npackage templates\n\nimport (\n\t\"html/template\"\n\t\"strings\"\n\n\trice \"github.com/GeertJohan/go.rice\"\n\t\"github.com/Masterminds/sprig\"\n\t\"gopkg.in/yaml.v2\"\n)\n\nfunc NewBox() *rice.Box {\n\tconf := rice.Config{\n\t\tLocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS},\n\t}\n\treturn conf.MustFindBox(\".\")\n}\n\nfunc FuncMap() template.FuncMap {\n\tf := sprig.HtmlFuncMap()\n\t// Add some extra functionality\n\textra := template.FuncMap{\n\t\t\"toYaml\": toYAML,\n\t}\n\tfor k, v := range extra {\n\t\tf[k] = v\n\t}\n\treturn f\n}\n\n// toYAML takes an interface, marshals it to yaml, and returns a string. It will\n// always return a string, even on marshal error (empty string).\n//\n// This is designed to be called from a template.\nfunc toYAML(v interface{}) string {\n\tdata, err := yaml.Marshal(v)\n\tif err != nil {\n\t\t// Swallow errors inside of a template.\n\t\treturn \"\"\n\t}\n\treturn strings.TrimSuffix(string(data), \"\\n\")\n}\n"),
+		Content: string("apiVersion: cert-manager.io/v1\nkind: Certificate\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  dnsNames:\n  - {{ .FQDN | quote }}\n  issuerRef:\n    group: cert-manager.io\n    kind: ClusterIssuer\n    name: letsencrypt\n  secretName: {{ .Key }}"),
+	}
+	file7 := &embedded.EmbeddedFile{
+		Filename:    "includes/includes.yaml",
+		FileModTime: time.Unix(1648260116, 0),
+
+		Content: string("apiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  virtualhost:\n    fqdn: {{ .FQDN | quote }}\n    tls:\n      secretName: {{ .Key }}\n  includes:\n{{- range $key, $value := .Includes }}\n  - conditions:\n    - prefix: {{ $value.Prefix }}\n  {{- if $value.Headers }}\n    {{- range $key, $value := $value.Headers }}\n    - header:\n        name: {{ $value.Name }}\n    {{- end }}\n  {{- end }}\n    name: {{ $value.Name }}\n  {{- if $.Namespace }}\n    namespace: {{ .Namespace | namespace }}\n  {{- end }}\n{{- end }}"),
+	}
+	file9 := &embedded.EmbeddedFile{
+		Filename:    "proxy/proxy.yaml",
+		FileModTime: time.Unix(1648253706, 0),
+
+		Content: string("\napiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  routes:\n  {{- range $key, $value := .Routes }}\n    - conditions:\n      - prefix: {{ $value.Route.Prefix }}\n    {{- if $value.Route.Headers }}\n      {{- range $key, $value := $value.Route.Headers }}\n      - header:\n          name: {{ $value.Name }}\n      {{- end }}\n    {{- end }}\n      services:\n        - name: {{ $value.Key }}\n          port: 8080\n  {{- end }}"),
+	}
+	filea := &embedded.EmbeddedFile{
+		Filename:    "templates.go",
+		FileModTime: time.Unix(1648260588, 0),
+
+		Content: string("//go:generate rice embed-go\n\npackage templates\n\nimport (\n\t\"strings\"\n\t\"text/template\"\n\n\trice \"github.com/GeertJohan/go.rice\"\n\t\"github.com/Masterminds/sprig\"\n\t\"gopkg.in/yaml.v2\"\n)\n\nfunc NewBox() *rice.Box {\n\tconf := rice.Config{\n\t\tLocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS},\n\t}\n\treturn conf.MustFindBox(\".\")\n}\n\nfunc FuncMap() template.FuncMap {\n\textra := template.FuncMap{\n\t\t\"toYaml\": toYAML,\n\t}\n\tfor k, v := range sprig.TxtFuncMap() {\n\t\textra[k] = v\n\t}\n\treturn extra\n}\n\nfunc toYAML(v interface{}) string {\n\tdata, err := yaml.Marshal(v)\n\tif err != nil {\n\t\t// Swallow errors inside of a template.\n\t\treturn \"\"\n\t}\n\treturn strings.TrimSuffix(string(data), \"\\n\")\n}\n"),
 	}
 
 	// define dirs
 	dir1 := &embedded.EmbeddedDir{
 		Filename:   "",
-		DirModTime: time.Unix(1647683341, 0),
+		DirModTime: time.Unix(1648253706, 0),
 		ChildFiles: []*embedded.EmbeddedFile{
-			file5, // "templates.go"
+			filea, // "templates.go"
 
 		},
 	}
 	dir2 := &embedded.EmbeddedDir{
-		Filename:   "deployment",
-		DirModTime: time.Unix(1647683341, 0),
+		Filename:   "function",
+		DirModTime: time.Unix(1648253706, 0),
 		ChildFiles: []*embedded.EmbeddedFile{
-			file3, // "deployment/deployment.yaml"
-			file4, // "deployment/service.yaml"
+			file3, // "function/deployment.yaml"
+			file4, // "function/service.yaml"
+
+		},
+	}
+	dir5 := &embedded.EmbeddedDir{
+		Filename:   "includes",
+		DirModTime: time.Unix(1648259005, 0),
+		ChildFiles: []*embedded.EmbeddedFile{
+			file6, // "includes/certificate.yaml"
+			file7, // "includes/includes.yaml"
+
+		},
+	}
+	dir8 := &embedded.EmbeddedDir{
+		Filename:   "proxy",
+		DirModTime: time.Unix(1648253706, 0),
+		ChildFiles: []*embedded.EmbeddedFile{
+			file9, // "proxy/proxy.yaml"
 
 		},
 	}
 
 	// link ChildDirs
 	dir1.ChildDirs = []*embedded.EmbeddedDir{
-		dir2, // "deployment"
+		dir2, // "function"
+		dir5, // "includes"
+		dir8, // "proxy"
 
 	}
 	dir2.ChildDirs = []*embedded.EmbeddedDir{}
+	dir5.ChildDirs = []*embedded.EmbeddedDir{}
+	dir8.ChildDirs = []*embedded.EmbeddedDir{}
 
 	// register embeddedBox
 	embedded.RegisterEmbeddedBox(`.`, &embedded.EmbeddedBox{
 		Name: `.`,
-		Time: time.Unix(1647683341, 0),
+		Time: time.Unix(1648253706, 0),
 		Dirs: map[string]*embedded.EmbeddedDir{
-			"":           dir1,
-			"deployment": dir2,
+			"":         dir1,
+			"function": dir2,
+			"includes": dir5,
+			"proxy":    dir8,
 		},
 		Files: map[string]*embedded.EmbeddedFile{
-			"deployment/deployment.yaml": file3,
-			"deployment/service.yaml":    file4,
-			"templates.go":               file5,
+			"function/deployment.yaml":  file3,
+			"function/service.yaml":     file4,
+			"includes/certificate.yaml": file6,
+			"includes/includes.yaml":    file7,
+			"proxy/proxy.yaml":          file9,
+			"templates.go":              filea,
 		},
 	})
 }

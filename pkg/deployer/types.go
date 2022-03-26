@@ -20,6 +20,11 @@ type Secret struct {
 	Raw       []byte
 }
 
+type FunctionRoute struct {
+	Key   string
+	Route manifests.FunctionRoute
+}
+
 // KubeSecret for parsing secret files
 type KubeSecret struct {
 	Metadata *KubeMetadata `yaml:"metadata"`
@@ -40,4 +45,11 @@ type Function struct {
 	Secrets  []string
 	Limits   *manifests.FunctionResources
 	Requests *manifests.FunctionResources
+	Routes   []manifests.FunctionRoute
+}
+
+type Route struct {
+	Key      string
+	FQDN     string
+	Includes []manifests.RouteInclude
 }

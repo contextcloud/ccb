@@ -18,20 +18,6 @@ func NewBox() *rice.Box {
 	return conf.MustFindBox(".")
 }
 
-func FuncMap() template.FuncMap {
-	extra := template.FuncMap{
-		"toYaml": toYAML,
-	}
-	for k, v := range sprig.TxtFuncMap() {
-		extra[k] = v
-	}
-	return extra
-}
-
-// toYAML takes an interface, marshals it to yaml, and returns a string. It will
-// always return a string, even on marshal error (empty string).
-//
-// This is designed to be called from a template.
 func toYAML(v interface{}) string {
 	data, err := yaml.Marshal(v)
 	if err != nil {
@@ -39,4 +25,17 @@ func toYAML(v interface{}) string {
 		return ""
 	}
 	return strings.TrimSuffix(string(data), "\n")
+}
+
+func GetFuncMaps(prefix string) template.FuncMap {
+	fm := sprig.TxtFuncMap()
+	fm["toYaml"] = toYAML
+	fm["namespace"] = func(v interface{}) string {
+		ns, ok := v.(string)
+		if !ok {
+			return ""
+		}
+		return prefix + ns
+	}
+	return fm
 }

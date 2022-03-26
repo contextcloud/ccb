@@ -1,0 +1,21 @@
+
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: {{ .Key }}
+  namespace: {{ .Namespace }}
+spec:
+  routes:
+  {{- range $key, $value := .Routes }}
+    - conditions:
+      - prefix: {{ $value.Route.Prefix }}
+    {{- if $value.Route.Headers }}
+      {{- range $key, $value := $value.Route.Headers }}
+      - header:
+          name: {{ $value.Name }}
+      {{- end }}
+    {{- end }}
+      services:
+        - name: {{ $value.Key }}
+          port: 8080
+  {{- end }}

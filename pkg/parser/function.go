@@ -19,6 +19,7 @@ type Function struct {
 	Secrets  []string
 	Limits   *manifests.FunctionResources
 	Requests *manifests.FunctionResources
+	Routes   []manifests.FunctionRoute
 }
 
 func newFunction(key string, raw manifests.Function) (*Function, error) {
@@ -38,6 +39,7 @@ func newFunction(key string, raw manifests.Function) (*Function, error) {
 		Secrets:   raw.Secrets,
 		Limits:    raw.Limits,
 		Requests:  raw.Requests,
+		Routes:    raw.Routes,
 	}
 
 	// validate it!

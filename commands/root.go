@@ -43,6 +43,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(newGenerateCommand())
 	cmd.AddCommand(newPackCommand())
 	cmd.AddCommand(newPushCommand())
+	cmd.AddCommand(newRoutesCommand())
 	cmd.AddCommand(newVersionCommand())
 
 	return cmd

@@ -12,14 +12,17 @@ var (
 	DeploymentManifestType ManifestType = "Deployment"
 	ServiceManifestType    ManifestType = "Service"
 	SecretManifestType     ManifestType = "Secret"
+	ProxyManifestType      ManifestType = "Proxy"
 )
 
 func ToManifestType(p string) ManifestType {
 	switch p {
-	case "deployment/deployment.yaml":
+	case "function/deployment.yaml":
 		return DeploymentManifestType
-	case "deployment/service.yaml":
+	case "function/service.yaml":
 		return ServiceManifestType
+	case "proxy/proxy.yaml":
+		return ProxyManifestType
 	default:
 		return ""
 	}
