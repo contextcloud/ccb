@@ -280,14 +280,16 @@ func (m *manager) GenerateRoutes(routes []*Route) (Manifests, error) {
 }
 
 func NewManager(workingDir string, namespace string) Manager {
-	prefix := ""
+	namespacePrefix := ""
+	routesPrefix := ""
 	indexOf := strings.Index(namespace, "--")
 	if indexOf > -1 {
-		prefix = namespace[0 : indexOf+2]
+		namespacePrefix = namespace[0 : indexOf+2]
+		routesPrefix = namespace[indexOf+2:] + "--"
 	}
 
 	box := templates.NewBox()
-	funcMap := templates.GetFuncMaps(prefix)
+	funcMap := templates.GetFuncMaps(namespacePrefix, routesPrefix)
 
 	return &manager{
 		box:        box,

@@ -27,7 +27,7 @@ func toYAML(v interface{}) string {
 	return strings.TrimSuffix(string(data), "\n")
 }
 
-func GetFuncMaps(prefix string) template.FuncMap {
+func GetFuncMaps(namespacePrefix string, routePrefix string) template.FuncMap {
 	fm := sprig.TxtFuncMap()
 	fm["toYaml"] = toYAML
 	fm["namespace"] = func(v interface{}) string {
@@ -35,7 +35,14 @@ func GetFuncMaps(prefix string) template.FuncMap {
 		if !ok {
 			return ""
 		}
-		return prefix + ns
+		return namespacePrefix + ns
+	}
+	fm["route"] = func(v interface{}) string {
+		ns, ok := v.(string)
+		if !ok {
+			return ""
+		}
+		return routePrefix + ns
 	}
 	return fm
 }

@@ -30,9 +30,9 @@ func init() {
 	}
 	file7 := &embedded.EmbeddedFile{
 		Filename:    "includes/includes.yaml",
-		FileModTime: time.Unix(1648260116, 0),
+		FileModTime: time.Unix(1648269787, 0),
 
-		Content: string("apiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  virtualhost:\n    fqdn: {{ .FQDN | quote }}\n    tls:\n      secretName: {{ .Key }}\n  includes:\n{{- range $key, $value := .Includes }}\n  - conditions:\n    - prefix: {{ $value.Prefix }}\n  {{- if $value.Headers }}\n    {{- range $key, $value := $value.Headers }}\n    - header:\n        name: {{ $value.Name }}\n    {{- end }}\n  {{- end }}\n    name: {{ $value.Name }}\n  {{- if $.Namespace }}\n    namespace: {{ .Namespace | namespace }}\n  {{- end }}\n{{- end }}"),
+		Content: string("apiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  virtualhost:\n    fqdn: {{ .FQDN | quote }}\n    tls:\n      secretName: {{ .Key }}\n  includes:\n{{- range $key, $value := .Includes }}\n  - conditions:\n    - prefix: {{ $value.Prefix }}\n  {{- if $value.Headers }}\n    {{- range $key, $value := $value.Headers }}\n    - header:\n        name: {{ $value.Name }}\n    {{- end }}\n  {{- end }}\n    name: {{ $value.Name | route }}\n  {{- if $.Namespace }}\n    namespace: {{ .Namespace | namespace }}\n  {{- end }}\n{{- end }}"),
 	}
 	file9 := &embedded.EmbeddedFile{
 		Filename:    "proxy/proxy.yaml",
@@ -42,9 +42,9 @@ func init() {
 	}
 	filea := &embedded.EmbeddedFile{
 		Filename:    "templates.go",
-		FileModTime: time.Unix(1648260588, 0),
+		FileModTime: time.Unix(1648269757, 0),
 
-		Content: string("//go:generate rice embed-go\n\npackage templates\n\nimport (\n\t\"strings\"\n\t\"text/template\"\n\n\trice \"github.com/GeertJohan/go.rice\"\n\t\"github.com/Masterminds/sprig\"\n\t\"gopkg.in/yaml.v2\"\n)\n\nfunc NewBox() *rice.Box {\n\tconf := rice.Config{\n\t\tLocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS},\n\t}\n\treturn conf.MustFindBox(\".\")\n}\n\nfunc FuncMap() template.FuncMap {\n\textra := template.FuncMap{\n\t\t\"toYaml\": toYAML,\n\t}\n\tfor k, v := range sprig.TxtFuncMap() {\n\t\textra[k] = v\n\t}\n\treturn extra\n}\n\nfunc toYAML(v interface{}) string {\n\tdata, err := yaml.Marshal(v)\n\tif err != nil {\n\t\t// Swallow errors inside of a template.\n\t\treturn \"\"\n\t}\n\treturn strings.TrimSuffix(string(data), \"\\n\")\n}\n"),
+		Content: string("//go:generate rice embed-go\n\npackage templates\n\nimport (\n\t\"strings\"\n\t\"text/template\"\n\n\trice \"github.com/GeertJohan/go.rice\"\n\t\"github.com/Masterminds/sprig\"\n\t\"gopkg.in/yaml.v2\"\n)\n\nfunc NewBox() *rice.Box {\n\tconf := rice.Config{\n\t\tLocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS},\n\t}\n\treturn conf.MustFindBox(\".\")\n}\n\nfunc toYAML(v interface{}) string {\n\tdata, err := yaml.Marshal(v)\n\tif err != nil {\n\t\t// Swallow errors inside of a template.\n\t\treturn \"\"\n\t}\n\treturn strings.TrimSuffix(string(data), \"\\n\")\n}\n\nfunc GetFuncMaps(namespacePrefix string, routePrefix string) template.FuncMap {\n\tfm := sprig.TxtFuncMap()\n\tfm[\"toYaml\"] = toYAML\n\tfm[\"namespace\"] = func(v interface{}) string {\n\t\tns, ok := v.(string)\n\t\tif !ok {\n\t\t\treturn \"\"\n\t\t}\n\t\treturn namespacePrefix + ns\n\t}\n\tfm[\"route\"] = func(v interface{}) string {\n\t\tns, ok := v.(string)\n\t\tif !ok {\n\t\t\treturn \"\"\n\t\t}\n\t\treturn routePrefix + ns\n\t}\n\treturn fm\n}\n"),
 	}
 
 	// define dirs
