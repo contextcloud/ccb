@@ -1,0 +1,25 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: {{ .Key }}
+  namespace: {{ .Namespace }}
+spec:
+  virtualhost:
+    fqdn: {{ .FQDN | quote }}
+    tls:
+      secretName: {{ .Key }}
+  includes:
+{{- range $key, $value := .Includes }}
+  - conditions:
+    - prefix: {{ $value.Prefix }}
+  {{- if $value.Headers }}
+    {{- range $key, $value := $value.Headers }}
+    - header:
+        name: {{ $value.Name }}
+    {{- end }}
+  {{- end }}
+    name: {{ $value.Name }}
+  {{- if $.Namespace }}
+    namespace: {{ .Namespace | namespace }}
+  {{- end }}
+{{- end }}

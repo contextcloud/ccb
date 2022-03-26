@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"strings"
 	"text/template"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -13,15 +14,15 @@ import (
 
 var (
 	// ErrNoMetadata when a file does not contain metadata
-	ErrNoMetadata = errors.New("No metadata found in file")
+	ErrNoMetadata = errors.New("no metadata found in file")
 	// ErrNoSpec when a file does not contain spec
-	ErrNoSpec = errors.New("No spec found in file")
+	ErrNoSpec = errors.New("no spec found in file")
 	// ErrInvalidKind kind is not support
-	ErrInvalidKind = errors.New("Unsupported kind")
+	ErrInvalidKind = errors.New("unsupported kind")
 	// ErrInvalidNamespace when two namespaces don't match
-	ErrInvalidNamespace = errors.New("Namespaces don't match")
+	ErrInvalidNamespace = errors.New("namespaces don't match")
 	// ErrNoConfig when the config isn't supplied
-	ErrNoConfig = errors.New("No config supplied")
+	ErrNoConfig = errors.New("no config supplied")
 )
 
 var livenessProbe = &Probe{
@@ -50,6 +51,7 @@ type manager struct {
 	box        *rice.Box
 	workingDir string
 	namespace  string
+	funcMap    template.FuncMap
 }
 
 func (m *manager) mergeEnv(all map[string]Environment, files []string, env map[string]string) (map[string]string, error) {
@@ -111,7 +113,7 @@ func (m *manager) executeFunction(dir string, key string, data map[string]interf
 
 		// parse the file
 		tmpl, err := template.New(path).
-			Funcs(templates.FuncMap()).
+			Funcs(m.funcMap).
 			Parse(tmplString)
 		if err != nil {
 			return err
@@ -256,20 +258,15 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*Function
 	return all, nil
 }
 
-func (m *manager) GenerateRoutes(fns []*Route) (Manifests, error) {
+func (m *manager) GenerateRoutes(routes []*Route) (Manifests, error) {
 	var all Manifests
 
-	routes := make(map[string][]Route)
-
-	for name, r := range routes {
-		if len(r) == 0 {
-			continue
-		}
-
+	for _, r := range routes {
 		data := map[string]interface{}{
-			"Key":       "routes--" + name,
+			"Key":       r.Key,
 			"Namespace": m.namespace,
-			"Routes":    r,
+			"FQDN":      r.FQDN,
+			"Includes":  r.Includes,
 		}
 		out, err := m.executeFunction("includes", "includes", data)
 		if err != nil {
@@ -283,11 +280,19 @@ func (m *manager) GenerateRoutes(fns []*Route) (Manifests, error) {
 }
 
 func NewManager(workingDir string, namespace string) Manager {
+	prefix := ""
+	indexOf := strings.Index(namespace, "--")
+	if indexOf > -1 {
+		prefix = namespace[0 : indexOf+2]
+	}
+
 	box := templates.NewBox()
+	funcMap := templates.GetFuncMaps(prefix)
 
 	return &manager{
 		box:        box,
 		workingDir: workingDir,
 		namespace:  namespace,
+		funcMap:    funcMap,
 	}
 }
