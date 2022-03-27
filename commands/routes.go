@@ -14,6 +14,7 @@ type routesOptions struct {
 	stackFile  string
 	workingDir string
 	namespace  string
+	commit     string
 	output     string
 }
 
@@ -40,6 +41,7 @@ func newRoutesCommand() *cobra.Command {
 	flags.StringVarP(&options.stackFile, "stack", "f", defaultStackFile, "Path to Stack file")
 	flags.StringVarP(&options.workingDir, "working-dir", "d", defaultWorkingDir, "Working directory")
 	flags.StringVarP(&options.namespace, "namespace", "n", "", "The network to connect to")
+	flags.StringVarP(&options.commit, "commit", "", "", "The commit label")
 	flags.StringVarP(&options.output, "output", "o", "", "Where to save the files")
 
 	return cmd
@@ -72,7 +74,7 @@ func runRoutes(env *print.Env, opts routesOptions, args []string) error {
 		}
 	}
 
-	de := deployer.NewManager(opts.workingDir, opts.namespace)
+	de := deployer.NewManager(opts.workingDir, opts.namespace, opts.commit)
 
 	manifests, err := de.GenerateRoutes(all)
 	if err != nil {

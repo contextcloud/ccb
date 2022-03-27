@@ -16,8 +16,12 @@ func Test_Build(t *testing.T) {
 		return
 	}
 
-	manager := NewManager("../../example", "default")
+	manager := NewManager("../../example", "default", "v1")
 	fns, err := stack.GetFunctions()
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	all := make([]*Function, len(fns))
 	for i, fn := range fns {

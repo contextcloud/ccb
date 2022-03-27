@@ -30,6 +30,7 @@ type generateOptions struct {
 	tag        string
 	registry   string
 	namespace  string
+	commit     string
 	output     string
 }
 
@@ -58,6 +59,7 @@ func newGenerateCommand() *cobra.Command {
 	flags.StringVarP(&options.tag, "tag", "t", "latest", "The tag for the containers")
 	flags.StringVarP(&options.registry, "registry", "", "", "The registry for the docker containers")
 	flags.StringVarP(&options.namespace, "namespace", "n", "", "The network to connect to")
+	flags.StringVarP(&options.commit, "commit", "", "", "The commit label")
 	flags.StringVarP(&options.output, "output", "o", "", "Where to save the files")
 
 	return cmd
@@ -97,7 +99,7 @@ func runGenerate(env *print.Env, opts generateOptions, args []string) error {
 		all[i] = f
 	}
 
-	de := deployer.NewManager(opts.workingDir, opts.namespace)
+	de := deployer.NewManager(opts.workingDir, opts.namespace, opts.commit)
 
 	manifests, err := de.GenerateFunctions(opts.registry, opts.tag, all)
 	if err != nil {

@@ -4,6 +4,8 @@ kind: HTTPProxy
 metadata:
   name: {{ .Key }}
   namespace: {{ .Namespace }}
+  labels: 
+    commit: {{ .Commit | quote }}
 spec:
   routes:
   {{- range $key, $value := .Routes }}

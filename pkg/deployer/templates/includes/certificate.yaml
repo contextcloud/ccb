@@ -3,6 +3,8 @@ kind: Certificate
 metadata:
   name: {{ .Key }}
   namespace: {{ .Namespace }}
+  labels: 
+    commit: {{ .Commit | quote }}
 spec:
   dnsNames:
   - {{ .FQDN | quote }}

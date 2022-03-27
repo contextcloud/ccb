@@ -6,6 +6,7 @@ metadata:
   labels: 
     release: {{ .Name }}
     version: {{ .Version | quote }}
+    commit: {{ .Commit | quote }}
 {{- if $.Annotations }}
   annotations:
     {{- toYaml .Annotations | nindent 4 }}        

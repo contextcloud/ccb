@@ -51,6 +51,7 @@ type manager struct {
 	box        *rice.Box
 	workingDir string
 	namespace  string
+	commit     string
 	funcMap    template.FuncMap
 }
 
@@ -215,6 +216,7 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*Function
 			"Name":           fn.Name,
 			"Version":        fn.Version,
 			"Namespace":      m.namespace,
+			"Commit":         m.commit,
 			"Image":          ImageName(registry, fn.Key, tag),
 			"LivenessProbe":  livenessProbe,
 			"ReadinessProbe": readinessProbe,
@@ -245,6 +247,7 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*Function
 		data := map[string]interface{}{
 			"Key":       "routes--" + name,
 			"Namespace": m.namespace,
+			"Commit":    m.commit,
 			"Routes":    r,
 		}
 		out, err := m.executeFunction("proxy", name, data)
@@ -265,6 +268,7 @@ func (m *manager) GenerateRoutes(routes []*Route) (Manifests, error) {
 		data := map[string]interface{}{
 			"Key":       r.Key,
 			"Namespace": m.namespace,
+			"Commit":    m.commit,
 			"FQDN":      r.FQDN,
 			"Includes":  r.Includes,
 		}
@@ -279,7 +283,7 @@ func (m *manager) GenerateRoutes(routes []*Route) (Manifests, error) {
 	return all, nil
 }
 
-func NewManager(workingDir string, namespace string) Manager {
+func NewManager(workingDir string, namespace string, commit string) Manager {
 	namespacePrefix := ""
 	routesPrefix := ""
 	indexOf := strings.Index(namespace, "--")
@@ -295,6 +299,7 @@ func NewManager(workingDir string, namespace string) Manager {
 		box:        box,
 		workingDir: workingDir,
 		namespace:  namespace,
+		commit:     commit,
 		funcMap:    funcMap,
 	}
 }
