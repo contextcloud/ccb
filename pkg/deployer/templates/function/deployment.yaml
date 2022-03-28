@@ -22,6 +22,7 @@ spec:
       labels:
         release: {{ .Name }}
         version: {{ .Version | quote }}
+        commit: {{ .Commit | quote }}
         {{- with .Labels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
