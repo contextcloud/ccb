@@ -18,6 +18,8 @@ spec:
       version: {{ .Version | quote }}
   template:
     metadata:
+      annotations:
+        linkerd.io/inject: enabled
       name: {{ .Key }}
       labels:
         release: {{ .Name }}
