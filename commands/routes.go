@@ -65,18 +65,9 @@ func runRoutes(env *print.Env, opts routesOptions, args []string) error {
 		return nil
 	}
 
-	all := make([]*deployer.Route, len(routes))
-	for i, r := range routes {
-		all[i] = &deployer.Route{
-			Key:      r.Key,
-			FQDN:     r.FQDN,
-			Includes: r.Includes,
-		}
-	}
-
 	de := deployer.NewManager(opts.workingDir, opts.namespace, opts.commit)
 
-	manifests, err := de.GenerateRoutes(all)
+	manifests, err := de.GenerateRoutes(routes)
 	if err != nil {
 		return err
 	}

@@ -83,25 +83,9 @@ func runGenerate(env *print.Env, opts generateOptions, args []string) error {
 		return nil
 	}
 
-	all := make([]*deployer.Function, len(fns))
-	for i, fn := range fns {
-		f := &deployer.Function{
-			Key:      fn.Key,
-			Name:     fn.Name,
-			Version:  fn.Version,
-			Env:      fn.Env,
-			Envs:     fn.Envs,
-			Secrets:  fn.Secrets,
-			Limits:   fn.Limits,
-			Requests: fn.Requests,
-			Routes:   fn.Routes,
-		}
-		all[i] = f
-	}
-
 	de := deployer.NewManager(opts.workingDir, opts.namespace, opts.commit)
 
-	manifests, err := de.GenerateFunctions(opts.registry, opts.tag, all)
+	manifests, err := de.GenerateFunctions(opts.registry, opts.tag, fns)
 	if err != nil {
 		return err
 	}

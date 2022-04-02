@@ -3,12 +3,14 @@ package deployer
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"text/template"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/contextcloud/ccb-cli/pkg/deployer/templates"
+	"github.com/contextcloud/ccb-cli/pkg/parser"
 	"github.com/contextcloud/ccb-cli/pkg/utils"
 )
 
@@ -43,8 +45,8 @@ var readinessProbe = &Probe{
 }
 
 type Manager interface {
-	GenerateRoutes(routes []*Route) (Manifests, error)
-	GenerateFunctions(registry string, tag string, fn []*Function) (Manifests, error)
+	GenerateRoutes(routes []*parser.Route) (Manifests, error)
+	GenerateFunctions(registry string, tag string, fn []*parser.Function) (Manifests, error)
 }
 
 type manager struct {
@@ -138,7 +140,7 @@ func (m *manager) executeFunction(dir string, key string, data map[string]interf
 	return out, nil
 }
 
-func (m *manager) GenerateFunctions(registry string, tag string, fns []*Function) (Manifests, error) {
+func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.Function) (Manifests, error) {
 	var all Manifests
 
 	routes := make(map[string][]FunctionRoute)
@@ -261,15 +263,18 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*Function
 	return all, nil
 }
 
-func (m *manager) GenerateRoutes(routes []*Route) (Manifests, error) {
+func (m *manager) GenerateRoutes(routes []*parser.Route) (Manifests, error) {
 	var all Manifests
 
 	for _, r := range routes {
+		fmt.Println(r.Routes)
+
 		data := map[string]interface{}{
 			"Key":       r.Key,
 			"Namespace": m.namespace,
 			"Commit":    m.commit,
 			"FQDN":      r.FQDN,
+			"Routes":    r.Routes,
 			"Includes":  r.Includes,
 		}
 		out, err := m.executeFunction("includes", "includes", data)

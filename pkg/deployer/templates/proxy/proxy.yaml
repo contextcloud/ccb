@@ -17,7 +17,12 @@ spec:
           name: {{ $value.Name }}
       {{- end }}
     {{- end }}
+    {{- if $value.Route.Redirect }}
+      requestRedirectPolicy:
+        hostname: {{ $value.Route.Redirect }}
+    {{- else }}
       services:
         - name: {{ $value.Key }}
           port: 8080
+    {{- end }}
   {{- end }}

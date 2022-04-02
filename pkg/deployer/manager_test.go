@@ -23,23 +23,7 @@ func Test_Build(t *testing.T) {
 		return
 	}
 
-	all := make([]*Function, len(fns))
-	for i, fn := range fns {
-		f := &Function{
-			Key:      fn.Key,
-			Name:     fn.Name,
-			Version:  fn.Version,
-			Env:      fn.Env,
-			Envs:     fn.Envs,
-			Secrets:  fn.Secrets,
-			Limits:   fn.Limits,
-			Requests: fn.Requests,
-			Routes:   fn.Routes,
-		}
-		all[i] = f
-	}
-
-	manifests, err := manager.GenerateFunctions("", "latest", all)
+	manifests, err := manager.GenerateFunctions("", "latest", fns)
 	if err != nil {
 		t.Error(err)
 		return

@@ -11,7 +11,6 @@ type Probe struct {
 	PeriodSeconds       int
 }
 
-// Environment represents external file for environment data
 type Environment map[string]string
 
 type Secret struct {
@@ -34,22 +33,4 @@ type KubeSecret struct {
 type KubeMetadata struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
-}
-
-type Function struct {
-	Key      string
-	Name     string
-	Version  string
-	Env      map[string]string
-	Envs     []string
-	Secrets  []string
-	Limits   *manifests.FunctionResources
-	Requests *manifests.FunctionResources
-	Routes   []manifests.FunctionRoute
-}
-
-type Route struct {
-	Key      string
-	FQDN     string
-	Includes []manifests.RouteInclude
 }

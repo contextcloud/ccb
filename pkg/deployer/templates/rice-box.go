@@ -30,15 +30,15 @@ func init() {
 	}
 	file7 := &embedded.EmbeddedFile{
 		Filename:    "includes/includes.yaml",
-		FileModTime: time.Unix(1648455884, 0),
+		FileModTime: time.Unix(1648872813, 0),
 
-		Content: string("apiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    commit: {{ .Commit | quote }}\nspec:\n  virtualhost:\n    fqdn: {{ .FQDN | quote }}\n    tls:\n      secretName: {{ .Key }}\n  includes:\n{{- range $key, $value := .Includes }}\n  - conditions:\n    - prefix: {{ $value.Prefix }}\n  {{- if $value.Headers }}\n    {{- range $key, $value := $value.Headers }}\n    - header:\n        name: {{ $value.Name }}\n    {{- end }}\n  {{- end }}\n    name: {{ $value.Name | route }}\n  {{- if $.Namespace }}\n    namespace: {{ .Namespace | namespace }}\n  {{- end }}\n{{- end }}"),
+		Content: string("apiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    commit: {{ .Commit | quote }}\nspec:\n  virtualhost:\n    fqdn: {{ .FQDN | quote }}\n    tls:\n      secretName: {{ .Key }}\n{{- if $.Routes }}\n  routes:\n  {{- range $key, $value := .Routes }}\n    - conditions:\n      - prefix: {{ $value.Prefix }}\n    {{- if $value.Headers }}\n      {{- range $key, $value := $value.Headers }}\n      - header:\n          name: {{ $value.Name }}\n      {{- end }}\n    {{- end }}\n    {{- if $value.Redirect }}\n      requestRedirectPolicy:\n        hostname: {{ $value.Redirect }}\n    {{- else }}\n      services:\n        - name: {{ $value.Key }}\n          port: 8080\n    {{- end }}    \n  {{- end }}\n{{- end }}\n{{- if .Includes }}\n  includes:\n  {{- range $key, $value := .Includes }}\n    - conditions:\n      - prefix: {{ $value.Prefix }}\n    {{- if $value.Headers }}\n      {{- range $key, $value := $value.Headers }}\n      - header:\n          name: {{ $value.Name }}\n      {{- end }}\n    {{- end }}\n      name: {{ $value.Name | route }}\n    {{- if $.Namespace }}\n      namespace: {{ .Namespace | namespace }}\n    {{- end }}\n  {{- end }}\n{{- end }}"),
 	}
 	file9 := &embedded.EmbeddedFile{
 		Filename:    "proxy/proxy.yaml",
-		FileModTime: time.Unix(1648455884, 0),
+		FileModTime: time.Unix(1648872964, 0),
 
-		Content: string("\napiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    commit: {{ .Commit | quote }}\nspec:\n  routes:\n  {{- range $key, $value := .Routes }}\n    - conditions:\n      - prefix: {{ $value.Route.Prefix }}\n    {{- if $value.Route.Headers }}\n      {{- range $key, $value := $value.Route.Headers }}\n      - header:\n          name: {{ $value.Name }}\n      {{- end }}\n    {{- end }}\n      services:\n        - name: {{ $value.Key }}\n          port: 8080\n  {{- end }}"),
+		Content: string("\napiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    commit: {{ .Commit | quote }}\nspec:\n  routes:\n  {{- range $key, $value := .Routes }}\n    - conditions:\n      - prefix: {{ $value.Route.Prefix }}\n    {{- if $value.Route.Headers }}\n      {{- range $key, $value := $value.Route.Headers }}\n      - header:\n          name: {{ $value.Name }}\n      {{- end }}\n    {{- end }}\n    {{- if $value.Route.Redirect }}\n      requestRedirectPolicy:\n        hostname: {{ $value.Route.Redirect }}\n    {{- else }}\n      services:\n        - name: {{ $value.Key }}\n          port: 8080\n    {{- end }}\n  {{- end }}"),
 	}
 	filea := &embedded.EmbeddedFile{
 		Filename:    "templates.go",

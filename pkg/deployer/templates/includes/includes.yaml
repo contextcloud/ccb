@@ -10,18 +10,41 @@ spec:
     fqdn: {{ .FQDN | quote }}
     tls:
       secretName: {{ .Key }}
-  includes:
-{{- range $key, $value := .Includes }}
-  - conditions:
-    - prefix: {{ $value.Prefix }}
-  {{- if $value.Headers }}
-    {{- range $key, $value := $value.Headers }}
-    - header:
-        name: {{ $value.Name }}
+{{- if $.Routes }}
+  routes:
+  {{- range $key, $value := .Routes }}
+    - conditions:
+      - prefix: {{ $value.Prefix }}
+    {{- if $value.Headers }}
+      {{- range $key, $value := $value.Headers }}
+      - header:
+          name: {{ $value.Name }}
+      {{- end }}
     {{- end }}
+    {{- if $value.Redirect }}
+      requestRedirectPolicy:
+        hostname: {{ $value.Redirect }}
+    {{- else }}
+      services:
+        - name: {{ $value.Key }}
+          port: 8080
+    {{- end }}    
   {{- end }}
-    name: {{ $value.Name | route }}
-  {{- if $.Namespace }}
-    namespace: {{ .Namespace | namespace }}
+{{- end }}
+{{- if .Includes }}
+  includes:
+  {{- range $key, $value := .Includes }}
+    - conditions:
+      - prefix: {{ $value.Prefix }}
+    {{- if $value.Headers }}
+      {{- range $key, $value := $value.Headers }}
+      - header:
+          name: {{ $value.Name }}
+      {{- end }}
+    {{- end }}
+      name: {{ $value.Name | route }}
+    {{- if $.Namespace }}
+      namespace: {{ .Namespace | namespace }}
+    {{- end }}
   {{- end }}
 {{- end }}

@@ -4,6 +4,10 @@ provider:
 routes:
   democom: 
     fqdn: demo.com
+    routes:
+      - name: api
+        prefix: /api/assets
+        redirect: www.demo.com
     includes:
       - namespace: other 
         name: api2
@@ -29,8 +33,8 @@ functions:
     secrets:
       - .secrets/assets
     routes:
-    - name: api
-      prefix: /api/assets
+      - name: api
+        prefix: /api/assets
 
   assets_2:
     name: assets
@@ -47,12 +51,12 @@ functions:
     secrets:
       - .secrets/assets
     routes:
-    - name: api2
-      prefix: /api/assets
-      headers:
-      - name: version
-        op: equal
-        values: v2
+      - name: api2
+        prefix: /api/assets
+        headers:
+        - name: version
+          op: equal
+          values: v2
 
   profile:
     template: golang-http-handler
@@ -66,9 +70,9 @@ functions:
     secrets:
       - .secrets/profile
     routes:
-    - name: api2
-      prefix: /api/profile
-      headers:
-      - name: version
-        op: equal
-        values: v2
+      - name: api2
+        prefix: /api/profile
+        headers:
+        - name: version
+          op: equal
+          values: v2

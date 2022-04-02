@@ -7,19 +7,8 @@ import (
 )
 
 type Function struct {
-	Key      string `validate:"required"`
-	Name     string `validate:"required"`
-	Version  string `validate:"required"`
-	Template string `validate:"required"`
-
-	BuildArgs map[string]string
-
-	Env      map[string]string
-	Envs     []string
-	Secrets  []string
-	Limits   *manifests.FunctionResources
-	Requests *manifests.FunctionResources
-	Routes   []manifests.FunctionRoute
+	manifests.Function
+	Key string `validate:"required"`
 }
 
 func newFunction(key string, raw manifests.Function) (*Function, error) {
@@ -27,19 +16,11 @@ func newFunction(key string, raw manifests.Function) (*Function, error) {
 	if len(n) == 0 {
 		n = key
 	}
+	raw.Name = n
 
 	fn := &Function{
-		Key:       key,
-		Name:      n,
-		Version:   raw.Version,
-		Template:  raw.Template,
-		BuildArgs: raw.BuildArgs,
-		Env:       raw.Env,
-		Envs:      raw.Envs,
-		Secrets:   raw.Secrets,
-		Limits:    raw.Limits,
-		Requests:  raw.Requests,
-		Routes:    raw.Routes,
+		Function: raw,
+		Key:      key,
 	}
 
 	// validate it!
