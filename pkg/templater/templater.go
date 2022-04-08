@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/denormal/go-gitignore"
 	"github.com/hashicorp/go-getter"
+	"github.com/neilotoole/errgroup"
 	cp "github.com/otiai10/copy"
-	"golang.org/x/sync/errgroup"
 )
 
 const defaultTemplateLocation = "github.com/contextcloud/templates"
@@ -21,18 +22,6 @@ const functionDir = "function"
 type templateFunction struct {
 	Name     string
 	Template string
-}
-type downloadJob struct {
-	source   string
-	template string
-}
-type downloadResult struct {
-	source   string
-	template string
-}
-type packResult struct {
-	functionName string
-	template     string
 }
 
 // Templater interface
@@ -90,68 +79,28 @@ func (t *templater) getTemplate(template string) string {
 		loc = defaultTemplateLocation
 	}
 
-	// build the location!.
-	// strip the "https://"
 	loc = strings.TrimPrefix(loc, "https://")
-
-	if strings.HasSuffix(loc, "/") {
-		loc = loc[0 : len(loc)-1]
-	}
+	loc = strings.TrimSuffix(loc, "/")
 
 	return fmt.Sprintf("%s//%s", loc, template)
 }
 
 func (t *templater) downloadAll(ctx context.Context, templates map[string]string) ([]string, error) {
-	g, ctx := errgroup.WithContext(ctx)
-	jobs := make(chan downloadJob)
-
-	g.Go(func() error {
-		defer close(jobs)
-		for name, tmpl := range templates {
-			select {
-			case jobs <- downloadJob{tmpl, name}:
-			case <-ctx.Done():
-				return ctx.Err()
-			}
-		}
-		return nil
-	})
-
-	c := make(chan downloadResult)
-
-	const numDigesters = 20
-	for i := 0; i < numDigesters; i++ {
-		g.Go(func() error {
-			for job := range jobs {
-				err := t.download(job.source, job.template)
-				if err != nil {
-					return err
-				}
-				select {
-				case c <- downloadResult{job.source, job.template}:
-				case <-ctx.Done():
-					return ctx.Err()
-				}
-			}
-			return nil
-		})
-	}
-	go func() {
-		g.Wait()
-		close(c)
-	}()
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, 1)
 
 	var out []string
-	for r := range c {
-		out = append(out, r.source)
+	for name, tmpl := range templates {
+		out = append(out, name)
+		g.Go(func() error {
+			return t.download(ctx, tmpl, name)
+		})
 	}
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-	return out, nil
+
+	return out, g.Wait()
 }
 
-func (t *templater) download(repository, template string) error {
+func (t *templater) download(ctx context.Context, repository, template string) error {
 	cli := &getter.Client{
 		Mode: getter.ClientModeDir,
 		Src:  repository,
@@ -162,56 +111,20 @@ func (t *templater) download(repository, template string) error {
 }
 
 func (t *templater) packAll(ctx context.Context, templates []templateFunction) ([]string, error) {
-	g, ctx := errgroup.WithContext(ctx)
-	jobs := make(chan templateFunction)
-
-	g.Go(func() error {
-		defer close(jobs)
-		for _, fn := range templates {
-			select {
-			case jobs <- fn:
-			case <-ctx.Done():
-				return ctx.Err()
-			}
-		}
-		return nil
-	})
-
-	c := make(chan packResult)
-
-	const numDigesters = 20
-	for i := 0; i < numDigesters; i++ {
-		g.Go(func() error {
-			for job := range jobs {
-				err := t.pack(job.Template, job.Name)
-				if err != nil {
-					return err
-				}
-				select {
-				case c <- packResult{job.Name, job.Template}:
-				case <-ctx.Done():
-					return ctx.Err()
-				}
-			}
-			return nil
-		})
-	}
-	go func() {
-		g.Wait()
-		close(c)
-	}()
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, cpus)
 
 	var out []string
-	for r := range c {
-		out = append(out, r.functionName)
+	for _, fn := range templates {
+		out = append(out, fn.Name)
+		g.Go(func() error {
+			return t.pack(ctx, fn.Template, fn.Name)
+		})
 	}
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-	return out, nil
+	return out, g.Wait()
 }
 
-func (t *templater) pack(templateName, fnName string) error {
+func (t *templater) pack(ctx context.Context, templateName, fnName string) error {
 	destination := path.Join(".", ".ccb", buildDir, fnName)
 	functionDest := path.Join(destination, functionDir)
 	templateSrc := path.Join(".", ".ccb", templatesDir, templateName)

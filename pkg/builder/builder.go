@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"runtime"
 	"strings"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/neilotoole/errgroup"
 )
 
 // Option for configing the builder
@@ -120,7 +121,7 @@ func (c *Client) Push(ctx context.Context) ([]string, error) {
 	return pushAll(ctx, images)
 }
 
-func buildImage(b *dockerBuildOpts) error {
+func buildImage(ctx context.Context, b *dockerBuildOpts) error {
 	return ExecCommand(".", b.CmdArgs())
 }
 
@@ -142,123 +143,37 @@ func (b *dockerBuildOpts) CmdArgs() []string {
 	return args
 }
 
-type buildJob struct {
-	functionName string
-	buildOpts    *dockerBuildOpts
-}
-type buildResult struct {
-	functionName string
-}
-
 func buildAll(ctx context.Context, functions map[string]*dockerBuildOpts) ([]string, error) {
-	g, ctx := errgroup.WithContext(ctx)
-	jobs := make(chan buildJob)
-
-	g.Go(func() error {
-		defer close(jobs)
-		for name, opts := range functions {
-			select {
-			case jobs <- buildJob{name, opts}:
-			case <-ctx.Done():
-				return ctx.Err()
-			}
-		}
-		return nil
-	})
-
-	c := make(chan buildResult)
-
-	const numDigesters = 1
-	for i := 0; i < numDigesters; i++ {
-		g.Go(func() error {
-			for job := range jobs {
-				err := buildImage(job.buildOpts)
-				if err != nil {
-					return err
-				}
-				select {
-				case c <- buildResult{job.functionName}:
-				case <-ctx.Done():
-					return ctx.Err()
-				}
-			}
-			return nil
-		})
-	}
-	go func() {
-		g.Wait()
-		close(c)
-	}()
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, 1)
 
 	var out []string
-	for r := range c {
-		out = append(out, r.functionName)
+	for name, opts := range functions {
+		out = append(out, name)
+		g.Go(func() error {
+			return buildImage(ctx, opts)
+		})
 	}
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-	return out, nil
+
+	return out, g.Wait()
 }
 
-func pushImage(image string) error {
+func pushImage(ctx context.Context, image string) error {
 	args := []string{"docker", "push", image}
 	return ExecCommand(".", args)
 }
 
-type pushJob struct {
-	functionName string
-	image        string
-}
-type pushResult struct {
-	functionName string
-}
-
 func pushAll(ctx context.Context, functions map[string]string) ([]string, error) {
-	g, ctx := errgroup.WithContext(ctx)
-	jobs := make(chan pushJob)
-
-	g.Go(func() error {
-		defer close(jobs)
-		for name, image := range functions {
-			select {
-			case jobs <- pushJob{name, image}:
-			case <-ctx.Done():
-				return ctx.Err()
-			}
-		}
-		return nil
-	})
-
-	c := make(chan pushResult)
-
-	const numDigesters = 1
-	for i := 0; i < numDigesters; i++ {
-		g.Go(func() error {
-			for job := range jobs {
-				err := pushImage(job.image)
-				if err != nil {
-					return err
-				}
-				select {
-				case c <- pushResult{job.functionName}:
-				case <-ctx.Done():
-					return ctx.Err()
-				}
-			}
-			return nil
-		})
-	}
-	go func() {
-		g.Wait()
-		close(c)
-	}()
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, 1)
 
 	var out []string
-	for r := range c {
-		out = append(out, r.functionName)
+	for name, image := range functions {
+		out = append(out, name)
+		g.Go(func() error {
+			return pushImage(ctx, image)
+		})
 	}
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-	return out, nil
+
+	return out, g.Wait()
 }

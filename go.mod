@@ -9,11 +9,10 @@ require (
 	github.com/drone/envsubst v1.0.3
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/hashicorp/go-getter v1.5.11
-	github.com/hashicorp/go-safetemp v1.0.0
+	github.com/neilotoole/errgroup v0.1.6
 	github.com/otiai10/copy v1.7.0
 	github.com/ryanuber/go-glob v1.0.0
 	github.com/spf13/cobra v1.4.0
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -36,8 +35,8 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.2.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.4.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
