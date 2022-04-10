@@ -66,7 +66,6 @@ func (c *Client) AddService(fnName string, args BuildArgs) error {
 		p + ".tar.gz",
 		p,
 	}
-
 	for _, p := range paths {
 		if _, err := os.Stat(p); err == nil {
 			image := c.imageName(fnName)

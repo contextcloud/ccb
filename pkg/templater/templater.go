@@ -114,7 +114,10 @@ func (t *templater) Tar(ctx context.Context) ([]string, error) {
 		v := fn.Template
 
 		g.Go(func() error {
-			return t.tar(ctx, v, n)
+			if err := t.tar(ctx, v, n); err != nil {
+				return err
+			}
+			return nil
 		})
 	}
 	return out, g.Wait()
@@ -195,16 +198,19 @@ func (t *templater) tar(ctx context.Context, templateName, fnName string) error 
 
 	// remove all
 	if err := os.RemoveAll(destination); err != nil {
+		fmt.Println("RemoveAll")
 		return err
 	}
 
 	// ensure dir exists
 	if err := os.MkdirAll(path.Dir(destination), 0777); err != nil {
+		fmt.Println("MkdirAll")
 		return err
 	}
 
 	out, err := os.Create(destination)
 	if err != nil {
+		fmt.Println("Create")
 		return err
 	}
 	defer out.Close()
@@ -225,6 +231,7 @@ func (t *templater) tar(ctx context.Context, templateName, fnName string) error 
 			ignorePath := path.Join(folder, filename)
 			ignore, err := gitignore.NewFromFile(ignorePath)
 			if err != nil && !os.IsNotExist(err) {
+				fmt.Println("IsNotExist")
 				return err
 			}
 			if ignore != nil {
@@ -239,12 +246,14 @@ func (t *templater) tar(ctx context.Context, templateName, fnName string) error 
 			if info.Mode().IsDir() {
 				return nil
 			}
+
 			// Because of scoping we can reference the external root_directory variable
 			np := p[len(folder)+1:]
 			if len(np) == 0 {
 				return nil
 			}
 
+			// skip stuff
 			for _, ign := range ignores {
 				m := ign.Match(p)
 				if m != nil && m.Ignore() {
@@ -257,13 +266,14 @@ func (t *templater) tar(ctx context.Context, templateName, fnName string) error 
 				name = path.Join(out, np)
 			}
 
-			fr, err := os.Open(p)
-			if err != nil {
-				return err
+			var link string
+			if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+				if link, err = os.Readlink(p); err != nil {
+					return err
+				}
 			}
-			defer fr.Close()
 
-			h, err := tar.FileInfoHeader(info, np)
+			h, err := tar.FileInfoHeader(info, link)
 			if err != nil {
 				return err
 			}
@@ -271,13 +281,20 @@ func (t *templater) tar(ctx context.Context, templateName, fnName string) error 
 			if err := tw.WriteHeader(h); err != nil {
 				return err
 			}
+
+			fr, err := os.Open(p)
+			if err != nil {
+				return err
+			}
+			defer fr.Close()
+
 			if _, err := io.Copy(tw, fr); err != nil {
 				return err
 			}
 			return nil
 		}
 
-		if err = filepath.Walk(folder, walkFn); err != nil {
+		if err := filepath.Walk(folder, walkFn); err != nil {
 			return err
 		}
 	}
