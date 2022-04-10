@@ -19,6 +19,7 @@ type buildOptions struct {
 	registry   string
 	network    string
 	buildArgs  []string
+	poolSize   int
 }
 
 func newBuildCommand() *cobra.Command {
@@ -47,6 +48,7 @@ func newBuildCommand() *cobra.Command {
 	flags.StringVarP(&options.registry, "registry", "", "", "The registry for the docker containers")
 	flags.StringVarP(&options.network, "network", "", "", "The network to connect to")
 	flags.StringSliceVarP(&options.buildArgs, "build-args", "", []string{}, "To be parsed as a key=value pair to docker build")
+	flags.IntVarP(&options.poolSize, "pool-size", "", 1, "How many containers to build together")
 
 	return cmd
 }
@@ -78,6 +80,7 @@ func runBuild(env *print.Env, opts buildOptions, args []string) error {
 		builder.SetRegistry(opts.registry),
 		builder.SetTag(opts.tag),
 		builder.SetNetwork(opts.network),
+		builder.SetPoolSize(opts.poolSize),
 	)
 
 	for _, fn := range fns {

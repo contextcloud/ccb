@@ -1,10 +1,14 @@
 package templater
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -29,6 +33,7 @@ type Templater interface {
 	AddFunction(name string, template string)
 	Download(ctx context.Context) ([]string, error)
 	Pack(ctx context.Context) ([]string, error)
+	Tar(ctx context.Context) ([]string, error)
 }
 
 // NewTemplater will create a new templater
@@ -63,13 +68,56 @@ func (t *templater) Download(ctx context.Context) ([]string, error) {
 		templates[fn.Template] = t.getTemplate(fn.Template)
 	}
 
-	// make a go channel!.
-	return t.downloadAll(ctx, templates)
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, 1)
+
+	var out []string
+	for name, tmpl := range templates {
+		out = append(out, name)
+
+		n := name
+		v := tmpl
+
+		g.Go(func() error {
+			return t.download(ctx, v, n)
+		})
+	}
+
+	return out, g.Wait()
 }
 
 // Pack will create buildable functions
 func (t *templater) Pack(ctx context.Context) ([]string, error) {
-	return t.packAll(ctx, t.functions)
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, cpus)
+
+	var out []string
+	for _, fn := range t.functions {
+		out = append(out, fn.Name)
+		g.Go(func() error {
+			return t.pack(ctx, fn.Template, fn.Name)
+		})
+	}
+	return out, g.Wait()
+}
+
+// Tar will create tarballs for functions
+func (t *templater) Tar(ctx context.Context) ([]string, error) {
+	cpus := runtime.NumCPU()
+	g, ctx := errgroup.WithContextN(ctx, cpus, cpus)
+
+	var out []string
+	for _, fn := range t.functions {
+		out = append(out, fn.Name)
+
+		n := fn.Name
+		v := fn.Template
+
+		g.Go(func() error {
+			return t.tar(ctx, v, n)
+		})
+	}
+	return out, g.Wait()
 }
 
 func (t *templater) getTemplate(template string) string {
@@ -85,21 +133,6 @@ func (t *templater) getTemplate(template string) string {
 	return fmt.Sprintf("%s//%s", loc, template)
 }
 
-func (t *templater) downloadAll(ctx context.Context, templates map[string]string) ([]string, error) {
-	cpus := runtime.NumCPU()
-	g, ctx := errgroup.WithContextN(ctx, cpus, 1)
-
-	var out []string
-	for name, tmpl := range templates {
-		out = append(out, name)
-		g.Go(func() error {
-			return t.download(ctx, tmpl, name)
-		})
-	}
-
-	return out, g.Wait()
-}
-
 func (t *templater) download(ctx context.Context, repository, template string) error {
 	cli := &getter.Client{
 		Mode: getter.ClientModeDir,
@@ -108,20 +141,6 @@ func (t *templater) download(ctx context.Context, repository, template string) e
 		Pwd:  ".",
 	}
 	return cli.Get()
-}
-
-func (t *templater) packAll(ctx context.Context, templates []templateFunction) ([]string, error) {
-	cpus := runtime.NumCPU()
-	g, ctx := errgroup.WithContextN(ctx, cpus, cpus)
-
-	var out []string
-	for _, fn := range templates {
-		out = append(out, fn.Name)
-		g.Go(func() error {
-			return t.pack(ctx, fn.Template, fn.Name)
-		})
-	}
-	return out, g.Wait()
 }
 
 func (t *templater) pack(ctx context.Context, templateName, fnName string) error {
@@ -137,6 +156,7 @@ func (t *templater) pack(ctx context.Context, templateName, fnName string) error
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
+
 	var skip func(src string) (bool, error)
 	if ignore != nil {
 		skip = func(src string) (bool, error) {
@@ -162,6 +182,104 @@ func (t *templater) pack(ctx context.Context, templateName, fnName string) error
 		Skip: skip,
 	}); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (t *templater) tar(ctx context.Context, templateName, fnName string) error {
+	destination := path.Join(".", ".ccb", buildDir, fnName+".tar.gz")
+	templateSrc := path.Join(".", ".ccb", templatesDir, templateName)
+	functionSrc := path.Join(t.workingDir, fnName)
+	ignoreNames := []string{".gitignore", ".dockerignore"}
+
+	// remove all
+	if err := os.RemoveAll(destination); err != nil {
+		return err
+	}
+
+	// ensure dir exists
+	if err := os.MkdirAll(path.Dir(destination), 0777); err != nil {
+		return err
+	}
+
+	out, err := os.Create(destination)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	gw := gzip.NewWriter(out)
+	defer gw.Close()
+
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
+
+	folders := map[string]string{
+		templateSrc: "",
+		functionSrc: "function",
+	}
+	for folder, out := range folders {
+		var ignores []gitignore.GitIgnore
+		for _, filename := range ignoreNames {
+			ignorePath := path.Join(folder, filename)
+			ignore, err := gitignore.NewFromFile(ignorePath)
+			if err != nil && !os.IsNotExist(err) {
+				return err
+			}
+			if ignore != nil {
+				ignores = append(ignores, ignore)
+			}
+		}
+
+		walkFn := func(p string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.Mode().IsDir() {
+				return nil
+			}
+			// Because of scoping we can reference the external root_directory variable
+			np := p[len(folder)+1:]
+			if len(np) == 0 {
+				return nil
+			}
+
+			for _, ign := range ignores {
+				m := ign.Match(p)
+				if m != nil && m.Ignore() {
+					return nil
+				}
+			}
+
+			name := np
+			if len(out) > 0 {
+				name = path.Join(out, np)
+			}
+
+			fr, err := os.Open(p)
+			if err != nil {
+				return err
+			}
+			defer fr.Close()
+
+			h, err := tar.FileInfoHeader(info, np)
+			if err != nil {
+				return err
+			}
+			h.Name = name
+			if err := tw.WriteHeader(h); err != nil {
+				return err
+			}
+			if _, err := io.Copy(tw, fr); err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if err = filepath.Walk(folder, walkFn); err != nil {
+			return err
+		}
 	}
 
 	return nil

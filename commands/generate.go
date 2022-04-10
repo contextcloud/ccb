@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"path"
 
 	"github.com/contextcloud/ccb-cli/pkg/deployer"
@@ -9,19 +8,6 @@ import (
 	"github.com/contextcloud/ccb-cli/pkg/print"
 
 	"github.com/spf13/cobra"
-)
-
-var (
-	// ErrNoMetadata when a file does not contain metadata
-	ErrNoMetadata = errors.New("No metadata found in file")
-	// ErrNoSpec when a file does not contain spec
-	ErrNoSpec = errors.New("No spec found in file")
-	// ErrInvalidKind kind is not support
-	ErrInvalidKind = errors.New("Unsupported kind")
-	// ErrInvalidNamespace when two namespaces don't match
-	ErrInvalidNamespace = errors.New("Namespaces don't match")
-	// ErrNoConfig when the config isn't supplied
-	ErrNoConfig = errors.New("No config supplied")
 )
 
 type generateOptions struct {

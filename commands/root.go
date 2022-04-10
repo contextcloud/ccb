@@ -44,6 +44,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(newPackCommand())
 	cmd.AddCommand(newPushCommand())
 	cmd.AddCommand(newRoutesCommand())
+	cmd.AddCommand(newTarCommand())
 	cmd.AddCommand(newVersionCommand())
 
 	return cmd
