@@ -19,6 +19,7 @@ spec:
       {{- range $key, $value := $value.Headers }}
       - header:
           name: {{ $value.Name }}
+          {{ $value.Operator }}: {{ $value.Value }}
       {{- end }}
     {{- end }}
     {{- if $value.Redirect }}

@@ -55,8 +55,8 @@ functions:
         prefix: /api/assets
         headers:
         - name: version
-          op: equal
-          values: v2
+          op: exact
+          value: v2
 
   profile:
     template: golang-http-handler

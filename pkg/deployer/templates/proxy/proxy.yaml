@@ -15,6 +15,7 @@ spec:
       {{- range $key, $value := $value.Route.Headers }}
       - header:
           name: {{ $value.Name }}
+          {{ $value.Operator }}: {{ $value.Value }}
       {{- end }}
     {{- end }}
     {{- if $value.Route.Redirect }}
