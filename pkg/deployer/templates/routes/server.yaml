@@ -1,0 +1,29 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: {{ .Key }}
+  namespace: {{ .Namespace }}
+  labels: 
+    commit: {{ .Commit | quote }}
+spec:
+  host: {{ .FQDN | quote }}
+  tls:
+    secret: {{ .Key }}
+    redirect:
+      enable: true
+{{- if .Routes }}
+  routes:
+  {{- range $key, $value := .Routes }}
+    - path: {{ $value.Prefix }}
+    {{- if $value.Redirect }}
+      action:
+        redirect:
+          url: {{ $value.Redirect }}
+          code: 301
+    {{- else if $value.Namespace }}
+      route: {{ $value.Namespace | namespace }}/{{ $value.Name | route }}
+    {{- else }}
+      route: {{ $value.Name | route }}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}

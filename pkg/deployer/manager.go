@@ -3,7 +3,6 @@ package deployer
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 	"text/template"
@@ -90,7 +89,7 @@ func (m *manager) secretNames(all map[string]*Secret, files []string) ([]string,
 			return nil, ErrNoConfig
 		}
 
-		out = append(out, found.Name)
+		out = append(out, found.SecretNames...)
 	}
 
 	return out, nil
@@ -140,6 +139,28 @@ func (m *manager) executeFunction(dir string, key string, data map[string]interf
 	return out, nil
 }
 
+func (m *manager) GenerateRoutes(routes []*parser.Route) (Manifests, error) {
+	var all Manifests
+
+	for _, r := range routes {
+		data := map[string]interface{}{
+			"Key":       r.Key,
+			"Namespace": m.namespace,
+			"Commit":    m.commit,
+			"FQDN":      r.FQDN,
+			"Routes":    r.Routes,
+		}
+		out, err := m.executeFunction("routes", "server", data)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, out...)
+
+	}
+
+	return all, nil
+}
+
 func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.Function) (Manifests, error) {
 	var all Manifests
 
@@ -172,7 +193,6 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			if err != nil {
 				return nil, err
 			}
-
 			// check the namespace
 			if len(secret.Namespace) > 0 && secret.Namespace != m.namespace {
 				return nil, ErrInvalidNamespace
@@ -253,31 +273,6 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			"Routes":    r,
 		}
 		out, err := m.executeFunction("proxy", name, data)
-		if err != nil {
-			return nil, err
-		}
-		all = append(all, out...)
-
-	}
-
-	return all, nil
-}
-
-func (m *manager) GenerateRoutes(routes []*parser.Route) (Manifests, error) {
-	var all Manifests
-
-	for _, r := range routes {
-		fmt.Println(r.Routes)
-
-		data := map[string]interface{}{
-			"Key":       r.Key,
-			"Namespace": m.namespace,
-			"Commit":    m.commit,
-			"FQDN":      r.FQDN,
-			"Routes":    r.Routes,
-			"Includes":  r.Includes,
-		}
-		out, err := m.executeFunction("includes", "includes", data)
 		if err != nil {
 			return nil, err
 		}

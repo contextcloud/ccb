@@ -9,10 +9,12 @@ import (
 type ManifestType string
 
 var (
-	DeploymentManifestType ManifestType = "Deployment"
-	ServiceManifestType    ManifestType = "Service"
-	SecretManifestType     ManifestType = "Secret"
-	ProxyManifestType      ManifestType = "Proxy"
+	DeploymentManifestType  ManifestType = "Deployment"
+	ServiceManifestType     ManifestType = "Service"
+	SecretManifestType      ManifestType = "Secret"
+	ProxyManifestType       ManifestType = "Proxy"
+	CertificateManifestType ManifestType = "Certificate"
+	VirtualServerType       ManifestType = "VirtualServer"
 )
 
 func ToManifestType(p string) ManifestType {
@@ -23,6 +25,10 @@ func ToManifestType(p string) ManifestType {
 		return ServiceManifestType
 	case "proxy/proxy.yaml":
 		return ProxyManifestType
+	case "routes/certificate.yaml":
+		return CertificateManifestType
+	case "routes/server.yaml":
+		return VirtualServerType
 	default:
 		return ""
 	}

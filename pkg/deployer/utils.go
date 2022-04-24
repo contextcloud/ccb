@@ -50,14 +50,28 @@ func LoadSecret(filename string) (*Secret, error) {
 	if err := yaml.Unmarshal(out, &secret); err != nil {
 		return nil, err
 	}
-
 	if secret.Metadata == nil {
 		return nil, ErrNoMetadata
 	}
 
+	secretNames := []string{secret.Metadata.Name}
+
+	if strings.ToLower(secret.Kind) == "sopssecret" {
+		var sopsSecret KubeSopSecret
+		if err := yaml.Unmarshal(out, &sopsSecret); err != nil {
+			return nil, err
+		}
+		secretNames = make([]string, len(sopsSecret.Spec.SecretTemplates))
+		for i, s := range sopsSecret.Spec.SecretTemplates {
+			secretNames[i] = s.Name
+		}
+	}
+
 	return &Secret{
-		Name:      secret.Metadata.Name,
-		Namespace: secret.Metadata.Namespace,
-		Raw:       out,
+		Kind:        secret.Kind,
+		Name:        secret.Metadata.Name,
+		Namespace:   secret.Metadata.Namespace,
+		Raw:         out,
+		SecretNames: secretNames,
 	}, nil
 }

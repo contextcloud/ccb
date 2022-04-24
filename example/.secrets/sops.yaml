@@ -1,0 +1,46 @@
+apiVersion: isindir.github.com/v1alpha3
+kind: SopsSecret
+metadata:
+    name: example-sopssecret
+spec:
+    # suspend reconciliation of the sops secret object
+    suspend: false
+    secretTemplates:
+        - name: my-secret-name-1
+          labels:
+            label1: value1
+          annotations:
+            key1: value1
+          stringData:
+            data-name0: ENC[AES256_GCM,data:0StkGKoa/WIdiKo=,iv:yHTUvZv1lQTZ3LRbesVhIgBcAk8pFquRfh5qtpPE9C0=,tag:6CuNzZR8H+J0h+E+u9OH3A==,type:str]
+          data:
+            data-name1: ZGF0YS12YWx1ZTE=
+        - name: jenkins-secret
+          labels:
+            jenkins.io/credentials-type: usernamePassword
+          annotations:
+            jenkins.io/credentials-description: credentials from Kubernetes
+          stringData:
+            username: ENC[AES256_GCM,data:ODIyQevxrYqZtg==,iv:pfhYa+pnpkIZGR55YMxYBdCJfIFV00iJGRaX04u193A=,tag:eXVBfvY6Kj5ltgwfgJf4/g==,type:str]
+            password: ENC[AES256_GCM,data:SKZKpg7hYHsJng==,iv:iTr0aSnQYRPM2vIlt+0RaTR7ELo0S7C1cq3wNC1ad5E=,tag:r88KE3dsNW63t2yL8s9wJg==,type:str]
+        - name: some-token
+          stringData:
+            token: ENC[AES256_GCM,data:mNXh8G3huVy/08HSNhaThmgWcBPHB48z/33TdLFmUiLVDROg25Kqn0ai+GJmyK9MrFfCBVDik4AZkTUAjbmetg==,iv:x9aCkaQBgta+rDYWMyFxtVnFM5hBpnwFZAJjRLOwQ0s=,tag:RO1A5TAl4CV+KvY9YzkTcQ==,type:str]
+        - name: docker-login
+          type: kubernetes.io/dockerconfigjson
+          stringData:
+            .dockerconfigjson: ENC[AES256_GCM,data:YQhduNcx0pyb2NE6td5E7zfFRXFzCaFuWiJPcQr5ARYaeYutlmLm31n1nyHN1oBLfri6ZKb1+WfpHK/msGGC/9XTvYo44aAikjL6n6FWn4yvVZQiskv5jktoGoV2Mzw0dYvPARHGP/uT+HygRg1NAEW3MOIcEvvcKan7vwBgXg==,iv:c119961fq6hQj4EqUkYHqDDvnAjDIJnKFLoeb+jOPK0=,tag:vj5EmaEqYapiGN5NWTGpAQ==,type:str]
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/nordic-gaming/locations/global/keyRings/sops/cryptoKeys/sops-key
+          created_at: "2022-04-23T16:41:33Z"
+          enc: CiQAHOQG/RO070EuUDSFVictDJFOMx9wxSqn7mr4qmnn4nSFm3QSSQA9by2lPxIzAXx508Dxtzf+BQYF4aKTjswU7SIUokZmugsYAHWJ2/yQPMsK8L+tKhyVTNYhqHIPjD5TaxADBLIsx4pHLyYebPc=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2022-04-23T16:41:34Z"
+    mac: ENC[AES256_GCM,data:yvlrhYBNKqlsvSGH9yIIigxBWjxixdjR42bkzom+y3QM9C/SxwlQI4HP9J317quZIh5K9pYgXgv7hQ1UFLTpyjNsbYaZomcZVLcLSBkwyhVNHz9sPNYxbqaZ9piABkxkcT9QUa8zdjye6GDfdym0dOLI7phir5EN23Vf6ZssTd8=,iv:i9fTIGudqjw9B+wCiELZV89E7Oe8n1ROIM2MCkfDqA4=,tag:uEhyeFITiNzi35dKNS74Yw==,type:str]
+    pgp: []
+    encrypted_suffix: Data
+    version: 3.7.2

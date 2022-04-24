@@ -6,16 +6,9 @@ routes:
     fqdn: demo.com
     routes:
       - name: api
+        namespace: other
         prefix: /api/assets
         redirect: www.demo.com
-    includes:
-      - namespace: other 
-        name: api2
-        prefix: /api/profile
-        headers:
-        - name: version
-          op: equal
-          values: v2
 
 functions:
   assets_1:
@@ -68,7 +61,7 @@ functions:
     envs:
       - .env/common
     secrets:
-      - .secrets/profile
+      - .secrets/sops
     routes:
       - name: api2
         prefix: /api/profile

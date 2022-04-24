@@ -14,9 +14,11 @@ type Probe struct {
 type Environment map[string]string
 
 type Secret struct {
-	Name      string
-	Namespace string
-	Raw       []byte
+	Kind        string
+	Name        string
+	Namespace   string
+	Raw         []byte
+	SecretNames []string
 }
 
 type FunctionRoute struct {
@@ -26,6 +28,7 @@ type FunctionRoute struct {
 
 // KubeSecret for parsing secret files
 type KubeSecret struct {
+	Kind     string        `yaml:"kind"`
 	Metadata *KubeMetadata `yaml:"metadata"`
 }
 
@@ -33,4 +36,16 @@ type KubeSecret struct {
 type KubeMetadata struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
+}
+
+type KubeSopSecret struct {
+	Kind     string             `yaml:"kind"`
+	Metadata *KubeMetadata      `yaml:"metadata"`
+	Spec     *KubeSopSecretSpec `yaml:"spec"`
+}
+
+type KubeSopSecretSpec struct {
+	SecretTemplates []struct {
+		Name string `yaml:"name"`
+	} `yaml:"secretTemplates"`
 }

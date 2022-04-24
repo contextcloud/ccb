@@ -53,15 +53,15 @@ type Function struct {
 
 // RouteInclude is a route to a namespace
 type RouteInclude struct {
-	Namespace string        `yaml:"namespace,omitempty"`
-	Name      string        `yaml:"name,omitempty"`
-	Prefix    string        `yaml:"prefix,omitempty"`
-	Headers   []RouteHeader `yaml:"headers,omitempty"`
+	Namespace string `yaml:"namespace,omitempty"`
+	Name      string `yaml:"name,omitempty"`
+	Prefix    string `yaml:"prefix,omitempty"`
+	Redirect  string `yaml:"redirect,omitempty"`
+	// Headers   []RouteHeader `yaml:"headers,omitempty"`
 }
 
 type Route struct {
-	Name     string          `yaml:"name,omitempty"`
-	FQDN     string          `yaml:"fqdn,omitempty"`
-	Routes   []FunctionRoute `yaml:"routes,omitempty"`
-	Includes []RouteInclude  `yaml:"includes,omitempty"`
+	Name   string         `yaml:"name,omitempty"`
+	FQDN   string         `yaml:"fqdn,omitempty"`
+	Routes []RouteInclude `yaml:"routes,omitempty"`
 }
