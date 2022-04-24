@@ -27,10 +27,10 @@ type Provider struct {
 
 // FunctionRoute is a route to a function
 type FunctionRoute struct {
-	Name     string        `yaml:"name,omitempty"`
-	Prefix   string        `yaml:"prefix,omitempty"`
-	Headers  []RouteHeader `yaml:"headers,omitempty"`
-	Redirect string        `yaml:"redirect,omitempty"`
+	Name     string `yaml:"name,omitempty"`
+	FQDN     string `yaml:"fqdn,omitempty"`
+	Prefix   string `yaml:"prefix,omitempty"`
+	Redirect string `yaml:"redirect,omitempty"`
 }
 
 // Function as deployed or built
@@ -57,7 +57,6 @@ type RouteInclude struct {
 	Name      string `yaml:"name,omitempty"`
 	Prefix    string `yaml:"prefix,omitempty"`
 	Redirect  string `yaml:"redirect,omitempty"`
-	// Headers   []RouteHeader `yaml:"headers,omitempty"`
 }
 
 type Route struct {

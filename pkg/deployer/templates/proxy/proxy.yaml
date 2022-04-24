@@ -1,29 +1,27 @@
-
-apiVersion: projectcontour.io/v1
-kind: HTTPProxy
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServerRoute
 metadata:
   name: {{ .Key }}
   namespace: {{ .Namespace }}
   labels: 
     commit: {{ .Commit | quote }}
 spec:
-  routes:
-  {{- range $key, $value := .Routes }}
-    - conditions:
-      - prefix: {{ $value.Route.Prefix }}
-    {{- if $value.Route.Headers }}
-      {{- range $key, $value := $value.Route.Headers }}
-      - header:
-          name: {{ $value.Name }}
-          {{ $value.Operator }}: {{ $value.Value }}
-      {{- end }}
-    {{- end }}
-    {{- if $value.Route.Redirect }}
-      requestRedirectPolicy:
-        hostname: {{ $value.Route.Redirect }}
-    {{- else }}
-      services:
-        - name: {{ $value.Key }}
-          port: 8080
-    {{- end }}
-  {{- end }}
+  host: {{ .FQDN | quote }}
+  upstreams:
+{{- range $key, $value := .Upstreams }}
+  - name: {{ $key }}
+    service: {{ $key }}
+    port: 8080
+{{- end -}}
+{{- range $key, $value := .Routes }}
+  subroutes:
+  - path: {{ $value.Route.Prefix }}
+    action:
+      {{- if $value.Route.Redirect }}
+      redirect:
+        url: {{ $value.Route.Redirect }}
+        code: 301
+      {{- else }}
+      pass: {{ $value.Key }}
+      {{- end -}}
+{{- end -}}

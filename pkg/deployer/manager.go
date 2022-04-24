@@ -24,6 +24,8 @@ var (
 	ErrInvalidNamespace = errors.New("namespaces don't match")
 	// ErrNoConfig when the config isn't supplied
 	ErrNoConfig = errors.New("no config supplied")
+	// ErrInvalidFQDN when the FQDN is invalid
+	ErrInvalidFQDN = errors.New("invalid FQDN")
 )
 
 var livenessProbe = &Probe{
@@ -266,10 +268,23 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			continue
 		}
 
+		fqdn := r[0].Route.FQDN
+		upstreams := make(map[string]bool)
+
+		for _, inner := range r {
+			if inner.Route.FQDN != fqdn {
+				return nil, ErrInvalidFQDN
+			}
+
+			upstreams[inner.Key] = true
+		}
+
 		data := map[string]interface{}{
 			"Key":       "routes--" + name,
 			"Namespace": m.namespace,
 			"Commit":    m.commit,
+			"FQDN":      fqdn,
+			"Upstreams": upstreams,
 			"Routes":    r,
 		}
 		out, err := m.executeFunction("proxy", name, data)

@@ -2,7 +2,7 @@ provider:
   version: 0.2
 
 routes:
-  democom: 
+  democom:
     fqdn: demo.com
     routes:
       - name: api
@@ -27,6 +27,7 @@ functions:
       - .secrets/assets
     routes:
       - name: api
+        fqdn: demo.com
         prefix: /api/assets
 
   assets_2:
@@ -45,11 +46,8 @@ functions:
       - .secrets/assets
     routes:
       - name: api2
+        fqdn: demo.com
         prefix: /api/assets
-        headers:
-        - name: version
-          op: exact
-          value: v2
 
   profile:
     template: golang-http-handler
@@ -64,8 +62,6 @@ functions:
       - .secrets/sops
     routes:
       - name: api2
+        fqdn: demo.com
         prefix: /api/profile
-        headers:
-        - name: version
-          op: equal
-          values: v2
+        redirect: www.demo.com

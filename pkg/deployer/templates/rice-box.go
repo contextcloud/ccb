@@ -24,9 +24,9 @@ func init() {
 	}
 	file6 := &embedded.EmbeddedFile{
 		Filename:    "proxy/proxy.yaml",
-		FileModTime: time.Unix(1650708884, 0),
+		FileModTime: time.Unix(1650785870, 0),
 
-		Content: string("\napiVersion: projectcontour.io/v1\nkind: HTTPProxy\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    commit: {{ .Commit | quote }}\nspec:\n  routes:\n  {{- range $key, $value := .Routes }}\n    - conditions:\n      - prefix: {{ $value.Route.Prefix }}\n    {{- if $value.Route.Headers }}\n      {{- range $key, $value := $value.Route.Headers }}\n      - header:\n          name: {{ $value.Name }}\n          {{ $value.Operator }}: {{ $value.Value }}\n      {{- end }}\n    {{- end }}\n    {{- if $value.Route.Redirect }}\n      requestRedirectPolicy:\n        hostname: {{ $value.Route.Redirect }}\n    {{- else }}\n      services:\n        - name: {{ $value.Key }}\n          port: 8080\n    {{- end }}\n  {{- end }}"),
+		Content: string("apiVersion: k8s.nginx.org/v1\nkind: VirtualServerRoute\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\n  labels: \n    commit: {{ .Commit | quote }}\nspec:\n  host: {{ .FQDN | quote }}\n  upstreams:\n{{- range $key, $value := .Upstreams }}\n  - name: {{ $key }}\n    service: {{ $key }}\n    port: 8080\n{{- end -}}\n{{- range $key, $value := .Routes }}\n  subroutes:\n  - path: {{ $value.Route.Prefix }}\n    action:\n      {{- if $value.Route.Redirect }}\n      redirect:\n        url: {{ $value.Route.Redirect }}\n        code: 301\n      {{- else }}\n      pass: {{ $value.Key }}\n      {{- end -}}\n{{- end -}}"),
 	}
 	file8 := &embedded.EmbeddedFile{
 		Filename:    "routes/certificate.yaml",
