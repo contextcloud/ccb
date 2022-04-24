@@ -108,6 +108,10 @@ spec:
         {{ $key }}: {{ $value }}
         {{- end }}
 {{- end }}
+{{- if $.ServiceAccount }}
+      serviceAccount: {{ $.ServiceAccount }}
+      serviceAccountName: {{ $.ServiceAccount }}
+{{- end }}
       volumes:
       - emptyDir: {}
         name: temp

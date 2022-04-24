@@ -54,6 +54,7 @@ functions:
     version: 0.1
     annotations:
       example: eg
+    service_account: aab
     env:
       EXAMPLE: eg
     envs:

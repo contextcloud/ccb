@@ -35,20 +35,21 @@ type FunctionRoute struct {
 
 // Function as deployed or built
 type Function struct {
-	Name         string             `yaml:"name"`
-	Version      string             `yaml:"version"`
-	Template     string             `yaml:"template"`
-	BuildOptions []string           `yaml:"build_options"`
-	BuildArgs    map[string]string  `yaml:"build_args"`
-	Env          map[string]string  `yaml:"env"`
-	Secrets      []string           `yaml:"secrets"`
-	Envs         []string           `yaml:"envs"`
-	Labels       *map[string]string `yaml:"labels"`
-	Annotations  *map[string]string `yaml:"annotations"`
-	Replicas     *int               `yaml:"replicas"`
-	Limits       *FunctionResources `yaml:"limits"`
-	Requests     *FunctionResources `yaml:"requests"`
-	Routes       []FunctionRoute    `yaml:"routes,omitempty"`
+	Name           string             `yaml:"name"`
+	Version        string             `yaml:"version"`
+	Template       string             `yaml:"template"`
+	ServiceAccount string             `yaml:"service_account"`
+	BuildOptions   []string           `yaml:"build_options"`
+	BuildArgs      map[string]string  `yaml:"build_args"`
+	Env            map[string]string  `yaml:"env"`
+	Secrets        []string           `yaml:"secrets"`
+	Envs           []string           `yaml:"envs"`
+	Labels         *map[string]string `yaml:"labels"`
+	Annotations    *map[string]string `yaml:"annotations"`
+	Replicas       *int               `yaml:"replicas"`
+	Limits         *FunctionResources `yaml:"limits"`
+	Requests       *FunctionResources `yaml:"requests"`
+	Routes         []FunctionRoute    `yaml:"routes,omitempty"`
 }
 
 // RouteInclude is a route to a namespace

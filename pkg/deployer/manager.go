@@ -246,6 +246,7 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			"ReadinessProbe": readinessProbe,
 			"Environment":    env,
 			"Secrets":        secrets,
+			"ServiceAccount": fn.ServiceAccount,
 		}
 		out, err := m.executeFunction("function", fn.Key, data)
 		if err != nil {
