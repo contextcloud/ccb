@@ -46,12 +46,12 @@ var readinessProbe = &Probe{
 }
 var resources = &Resources{
 	Requests: &ResourceValues{
-		Memory: "125m",
-		CPU:    "256Mi",
+		CPU:    "125m",
+		Memory: "256Mi",
 	},
 	Limits: &ResourceValues{
-		Memory: "250m",
-		CPU:    "512Mi",
+		CPU:    "250m",
+		Memory: "512Mi",
 	},
 }
 
