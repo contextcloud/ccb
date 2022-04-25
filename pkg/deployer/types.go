@@ -2,6 +2,16 @@ package deployer
 
 import "github.com/contextcloud/ccb-cli/pkg/manifests"
 
+type Resources struct {
+	Requests *ResourceValues `yaml:"requests"`
+	Limits   *ResourceValues `yaml:"limits"`
+}
+
+type ResourceValues struct {
+	Memory string `yaml:"memory"`
+	CPU    string `yaml:"cpu"`
+}
+
 type Probe struct {
 	Enabled             bool
 	Path                string

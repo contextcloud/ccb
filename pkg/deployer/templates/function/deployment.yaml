@@ -73,20 +73,8 @@ spec:
           timeoutSeconds: {{ $.ReadinessProbe.TimeoutSeconds }}
           periodSeconds: {{ $.ReadinessProbe.PeriodSeconds }}
 {{- end }}
-{{- if or $.Limits $.Requests }}
-        resources:
-{{- if $.Limits }}
-          limits:
-            {{- range $key, $value := .Limits }}
-            {{ $key }}: {{ $value }}
-            {{- end }}
-{{- end }}
-{{- if $.Requests }}
-          requests:
-            {{- range $key, $value := .Requests }}
-            {{ $key }}: {{ $value }}
-            {{- end }}
-{{- end }}
+{{- if $.Resources }}
+        resources: {{ toYaml $.Resources | nindent 10 }}
 {{- end }}
 {{- if $.ReadOnlyRootFilesystem }}
         securityContext:

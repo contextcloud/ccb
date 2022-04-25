@@ -44,6 +44,16 @@ var readinessProbe = &Probe{
 	TimeoutSeconds:      5,
 	PeriodSeconds:       5,
 }
+var resources = &Resources{
+	Requests: &ResourceValues{
+		Memory: "125m",
+		CPU:    "256MiB",
+	},
+	Limits: &ResourceValues{
+		Memory: "250m",
+		CPU:    "512MiB",
+	},
+}
 
 type Manager interface {
 	GenerateRoutes(routes []*parser.Route) (Manifests, error)
@@ -247,6 +257,7 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			"Environment":    env,
 			"Secrets":        secrets,
 			"ServiceAccount": fn.ServiceAccount,
+			"Resources":      resources,
 		}
 		out, err := m.executeFunction("function", fn.Key, data)
 		if err != nil {
