@@ -12,9 +12,9 @@ spec:
   - name: {{ $key }}
     service: {{ $key }}
     port: 8080
-{{- end -}}
-{{- range $key, $value := .Routes }}
+{{- end }}
   subroutes:
+{{- range $key, $value := .Routes }}
   - path: {{ $value.Route.Prefix }}
     action:
       {{- if $value.Route.Redirect }}
@@ -24,4 +24,4 @@ spec:
       {{- else }}
       pass: {{ $value.Key }}
       {{- end -}}
-{{- end -}}
+{{- end }}
