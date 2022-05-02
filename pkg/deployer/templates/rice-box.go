@@ -18,9 +18,9 @@ func init() {
 	}
 	file4 := &embedded.EmbeddedFile{
 		Filename:    "function/hpa.yaml",
-		FileModTime: time.Unix(1651489980, 0),
+		FileModTime: time.Unix(1651497406, 0),
 
-		Content: string("apiVersion: autoscaling/v2beta1\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: {{ .Key }}\n  minReplicas: {{ .MinReplicas }}\n  maxReplicas: {{ .MaxReplicas }}\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 85\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: Utilization\n        averageUtilization: 85"),
+		Content: string("apiVersion: autoscaling/v2beta1\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: {{ .Key }}\n  namespace: {{ .Namespace }}\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: {{ .Key }}\n  minReplicas: {{ .MinReplicas }}\n  maxReplicas: {{ .MaxReplicas }}\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      targetAverageUtilization: 85\n  - type: Resource\n    resource:\n      name: memory\n      targetAverageUtilization: 85"),
 	}
 	file5 := &embedded.EmbeddedFile{
 		Filename:    "function/service.yaml",
