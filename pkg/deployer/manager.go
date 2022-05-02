@@ -245,6 +245,12 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			return nil, err
 		}
 
+		minReplicas := 2
+		maxReplicas := 4
+		if fn.Replicas != nil && *fn.Replicas > 2 {
+			maxReplicas = *fn.Replicas
+		}
+
 		data := map[string]interface{}{
 			"Key":            fn.Key,
 			"Name":           fn.Name,
@@ -258,6 +264,8 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			"Secrets":        secrets,
 			"ServiceAccount": fn.ServiceAccount,
 			"Resources":      resources,
+			"MinReplicas":    minReplicas,
+			"MaxReplicas":    maxReplicas,
 		}
 		out, err := m.executeFunction("function", fn.Key, data)
 		if err != nil {

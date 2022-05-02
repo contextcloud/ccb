@@ -8,9 +8,7 @@ metadata:
     version: {{ .Version | quote }}
     commit: {{ .Commit | quote }}
 spec:
-{{- if $.Replicas }}
-  replicas: {{ .Replicas }}
-{{- end }}
+  replicas: {{ .MinReplicas }}
   revisionHistoryLimit: 10
   selector:
     matchLabels:
