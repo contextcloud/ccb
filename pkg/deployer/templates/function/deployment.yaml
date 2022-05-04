@@ -88,12 +88,9 @@ spec:
           readOnly: true
       {{- end }}
 {{- end }}
-{{- if $.NodeSelector }}
       nodeSelector:
-        {{- range $key, $value := .NodeSelector }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
-{{- end }}
+        cloud.google.com/gke-spot: "true"
+      terminationGracePeriodSeconds: 25
 {{- if $.ServiceAccount }}
       serviceAccount: {{ $.ServiceAccount }}
       serviceAccountName: {{ $.ServiceAccount }}
