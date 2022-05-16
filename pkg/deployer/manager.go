@@ -44,16 +44,6 @@ var readinessProbe = &Probe{
 	TimeoutSeconds:      5,
 	PeriodSeconds:       5,
 }
-var resources = &Resources{
-	Requests: &ResourceValues{
-		CPU:    "125m",
-		Memory: "256Mi",
-	},
-	Limits: &ResourceValues{
-		CPU:    "250m",
-		Memory: "512Mi",
-	},
-}
 
 type Manager interface {
 	GenerateRoutes(routes []*parser.Route) (Manifests, error)
@@ -249,6 +239,28 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 		maxReplicas := 4
 		if fn.Replicas != nil && *fn.Replicas > 2 {
 			maxReplicas = *fn.Replicas
+		}
+
+		var resources = &Resources{
+			Requests: &ResourceValues{
+				CPU:    "125m",
+				Memory: "256Mi",
+			},
+			Limits: &ResourceValues{
+				CPU:    "250m",
+				Memory: "512Mi",
+			},
+		}
+
+		if fn.Limits != nil {
+			resources.Requests.CPU = fn.Limits.CPU
+			resources.Requests.Memory = fn.Limits.Memory
+			resources.Limits.CPU = fn.Limits.CPU
+			resources.Limits.Memory = fn.Limits.Memory
+		}
+		if fn.Requests != nil {
+			resources.Requests.CPU = fn.Requests.CPU
+			resources.Requests.Memory = fn.Requests.Memory
 		}
 
 		data := map[string]interface{}{

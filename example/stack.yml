@@ -55,6 +55,9 @@ functions:
     annotations:
       example: eg
     service_account: aab
+    limits:
+      cpu: "100m"
+      memory: "100Mi"
     env:
       EXAMPLE: eg
     envs:
