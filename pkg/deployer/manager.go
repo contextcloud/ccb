@@ -230,6 +230,11 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 			return nil, err
 		}
 
+		// add the service envs
+		env["SERVICENAME"] = fn.Key
+		env["VERSION"] = fn.Version
+		env["ENVIRONMENT"] = fn.Environment
+
 		secrets, err := m.secretNames(secrets, fn.Secrets)
 		if err != nil {
 			return nil, err
@@ -264,20 +269,21 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 		}
 
 		data := map[string]interface{}{
-			"Key":            fn.Key,
-			"Name":           fn.Name,
-			"Version":        fn.Version,
-			"Namespace":      m.namespace,
-			"Commit":         m.commit,
-			"Image":          ImageName(registry, fn.Key, tag),
-			"LivenessProbe":  livenessProbe,
-			"ReadinessProbe": readinessProbe,
-			"Environment":    env,
-			"Secrets":        secrets,
-			"ServiceAccount": fn.ServiceAccount,
-			"Resources":      resources,
-			"MinReplicas":    minReplicas,
-			"MaxReplicas":    maxReplicas,
+			"Key":             fn.Key,
+			"Name":            fn.Name,
+			"Version":         fn.Version,
+			"EnvironmentName": fn.Environment,
+			"Namespace":       m.namespace,
+			"Commit":          m.commit,
+			"Image":           ImageName(registry, fn.Key, tag),
+			"LivenessProbe":   livenessProbe,
+			"ReadinessProbe":  readinessProbe,
+			"Environment":     env,
+			"Secrets":         secrets,
+			"ServiceAccount":  fn.ServiceAccount,
+			"Resources":       resources,
+			"MinReplicas":     minReplicas,
+			"MaxReplicas":     maxReplicas,
 		}
 		out, err := m.executeFunction("function", fn.Key, data)
 		if err != nil {

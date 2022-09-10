@@ -37,6 +37,7 @@ type FunctionRoute struct {
 type Function struct {
 	Name           string             `yaml:"name"`
 	Version        string             `yaml:"version"`
+	Environment    string             `yaml:"environment"`
 	Template       string             `yaml:"template"`
 	ServiceAccount string             `yaml:"service_account"`
 	BuildOptions   []string           `yaml:"build_options"`

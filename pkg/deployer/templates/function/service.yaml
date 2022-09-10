@@ -6,7 +6,11 @@ metadata:
   labels: 
     release: {{ .Name }}
     version: {{ .Version | quote }}
+    environment: {{ .EnvironmentName }}
     commit: {{ .Commit | quote }}
+    {{- with .Labels }}
+    {{- toYaml . | nindent 8 }}
+    {{- end }}
 {{- if $.Annotations }}
   annotations:
     {{- toYaml .Annotations | nindent 4 }}        
@@ -22,3 +26,8 @@ spec:
   selector:
     release: {{ .Name }}
     version: {{ .Version | quote }}
+    environment: {{ .EnvironmentName }}
+    commit: {{ .Commit | quote }}
+    {{- with .Labels }}
+    {{- toYaml . | nindent 8 }}
+    {{- end }}

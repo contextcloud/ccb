@@ -6,7 +6,11 @@ metadata:
   labels: 
     release: {{ .Name }}
     version: {{ .Version | quote }}
+    environment: {{ .EnvironmentName }}
     commit: {{ .Commit | quote }}
+    {{- with .Labels }}
+    {{- toYaml . | nindent 8 }}
+    {{- end }}
 spec:
   replicas: {{ .MinReplicas }}
   revisionHistoryLimit: 10
@@ -22,6 +26,7 @@ spec:
       labels:
         release: {{ .Name }}
         version: {{ .Version | quote }}
+        environment: {{ .EnvironmentName }}
         commit: {{ .Commit | quote }}
         {{- with .Labels }}
         {{- toYaml . | nindent 8 }}
@@ -90,6 +95,19 @@ spec:
 {{- end }}
       nodeSelector:
         cloud.google.com/gke-spot: "true"
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            release: {{ .Name }}
+            version: {{ .Version | quote }}
+            environment: {{ .EnvironmentName }}
+            commit: {{ .Commit | quote }}
+            {{- with .Labels }}
+            {{- toYaml . | nindent 8 }}
+            {{- end }}
       terminationGracePeriodSeconds: 25
 {{- if $.ServiceAccount }}
       serviceAccount: {{ $.ServiceAccount }}
