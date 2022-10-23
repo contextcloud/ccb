@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/contextcloud/ccb-cli/pkg/manifests"
+	"github.com/contextcloud/ccb/pkg/manifests"
 	"github.com/ryanuber/go-glob"
 )
 

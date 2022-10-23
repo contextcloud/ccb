@@ -3,9 +3,9 @@ package commands
 import (
 	"path"
 
-	"github.com/contextcloud/ccb-cli/pkg/deployer"
-	"github.com/contextcloud/ccb-cli/pkg/parser"
-	"github.com/contextcloud/ccb-cli/pkg/print"
+	"github.com/contextcloud/ccb/pkg/deployer"
+	"github.com/contextcloud/ccb/pkg/parser"
+	"github.com/contextcloud/ccb/pkg/print"
 
 	"github.com/spf13/cobra"
 )

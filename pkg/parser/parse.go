@@ -3,7 +3,7 @@ package parser
 import (
 	"io/ioutil"
 
-	"github.com/contextcloud/ccb-cli/pkg/manifests"
+	"github.com/contextcloud/ccb/pkg/manifests"
 	"gopkg.in/yaml.v2"
 )
 

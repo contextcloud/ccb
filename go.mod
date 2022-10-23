@@ -1,4 +1,4 @@
-module github.com/contextcloud/ccb-cli
+module github.com/contextcloud/ccb
 
 go 1.18
 

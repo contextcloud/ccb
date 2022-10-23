@@ -3,7 +3,7 @@ package parser
 import (
 	"github.com/go-playground/validator/v10"
 
-	"github.com/contextcloud/ccb-cli/pkg/manifests"
+	"github.com/contextcloud/ccb/pkg/manifests"
 )
 
 type Function struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/contextcloud/ccb-cli/pkg/print"
+	"github.com/contextcloud/ccb/pkg/print"
 )
 
 type versionOptions struct {

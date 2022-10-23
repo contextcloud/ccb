@@ -1,6 +1,6 @@
 package deployer
 
-import "github.com/contextcloud/ccb-cli/pkg/manifests"
+import "github.com/contextcloud/ccb/pkg/manifests"
 
 type Resources struct {
 	Requests *ResourceValues `yaml:"requests"`

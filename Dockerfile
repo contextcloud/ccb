@@ -7,7 +7,7 @@ ENV GIT_COMMIT=
 
 RUN go get github.com/GeertJohan/go.rice/rice
 
-WORKDIR /go/src/github.com/contextcloud/ccb-cli
+WORKDIR /go/src/github.com/contextcloud/ccb
 COPY . .
 
 # Run a gofmt and exclude all vendored code.
@@ -17,8 +17,8 @@ RUN go generate ./...
 RUN go test $(go list ./... | grep -v /vendor/ | grep -v /template/|grep -v /build/|grep -v /sample/) -cover
 
 RUN go build --ldflags "-s -w \
-    -X github.com/contextcloud/ccb-cli/pkg/cmd.GitCommit=${GIT_COMMIT} \
-    -X github.com/contextcloud/ccb-cli/pkg/cmd.Version=${VERSION}" \
+    -X github.com/contextcloud/ccb/pkg/cmd.GitCommit=${GIT_COMMIT} \
+    -X github.com/contextcloud/ccb/pkg/cmd.Version=${VERSION}" \
     -a -installsuffix cgo -o ccb main.go
 
 FROM gcr.io/cloud-builders/docker
@@ -26,4 +26,4 @@ FROM gcr.io/cloud-builders/docker
 ENV PATH=$PATH:/usr/bin/
 ENTRYPOINT ["/usr/bin/ccb"]
 
-COPY --from=builder /go/src/github.com/contextcloud/ccb-cli/ccb /usr/bin/
+COPY --from=builder /go/src/github.com/contextcloud/ccb/ccb /usr/bin/

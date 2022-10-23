@@ -4,7 +4,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/contextcloud/ccb-cli/pkg/parser"
+	"github.com/contextcloud/ccb/pkg/parser"
 )
 
 func Test_Build(t *testing.T) {

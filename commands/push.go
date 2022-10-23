@@ -4,10 +4,10 @@ import (
 	"context"
 	"path"
 
-	"github.com/contextcloud/ccb-cli/pkg/builder"
-	"github.com/contextcloud/ccb-cli/pkg/parser"
-	"github.com/contextcloud/ccb-cli/pkg/print"
-	"github.com/contextcloud/ccb-cli/pkg/utils"
+	"github.com/contextcloud/ccb/pkg/builder"
+	"github.com/contextcloud/ccb/pkg/parser"
+	"github.com/contextcloud/ccb/pkg/print"
+	"github.com/contextcloud/ccb/pkg/utils"
 
 	"github.com/spf13/cobra"
 )

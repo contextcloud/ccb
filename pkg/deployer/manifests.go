@@ -3,7 +3,7 @@ package deployer
 import (
 	"os"
 
-	"github.com/contextcloud/ccb-cli/pkg/print"
+	"github.com/contextcloud/ccb/pkg/print"
 )
 
 type ManifestType string

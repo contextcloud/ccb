@@ -8,9 +8,9 @@ import (
 	"text/template"
 
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/contextcloud/ccb-cli/pkg/deployer/templates"
-	"github.com/contextcloud/ccb-cli/pkg/parser"
-	"github.com/contextcloud/ccb-cli/pkg/utils"
+	"github.com/contextcloud/ccb/pkg/deployer/templates"
+	"github.com/contextcloud/ccb/pkg/parser"
+	"github.com/contextcloud/ccb/pkg/utils"
 )
 
 var (
