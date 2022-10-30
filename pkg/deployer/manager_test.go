@@ -8,7 +8,7 @@ import (
 )
 
 func Test_Build(t *testing.T) {
-	stackFile := path.Join("../../example", "stack.yml")
+	stackFile := path.Join("./example", "stack.yml")
 
 	stack, err := parser.LoadStack(stackFile)
 	if err != nil {
@@ -16,7 +16,7 @@ func Test_Build(t *testing.T) {
 		return
 	}
 
-	manager := NewManager("../../example", "default", "v1")
+	manager := NewManager("./example", "default", "v1")
 	fns, err := stack.GetFunctions()
 	if err != nil {
 		t.Error(err)
@@ -33,7 +33,7 @@ func Test_Build(t *testing.T) {
 }
 
 func Test_Routes(t *testing.T) {
-	stackFile := path.Join("../../example", "stack.yml")
+	stackFile := path.Join("./example", "stack.yml")
 
 	stack, err := parser.LoadStack(stackFile)
 	if err != nil {
@@ -41,7 +41,7 @@ func Test_Routes(t *testing.T) {
 		return
 	}
 
-	manager := NewManager("../../example", "default", "v1")
+	manager := NewManager("./example", "default", "v1")
 	rts, err := stack.GetRoutes()
 	if err != nil {
 		t.Error(err)

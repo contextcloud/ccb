@@ -13,14 +13,14 @@ type versionOptions struct {
 }
 
 func newVersionCommand() *cobra.Command {
-	env := print.NewEnv()
+	logger := print.NewConsoleLogger()
 	options := versionOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Show ccb version information.",
 		Run: func(cmd *cobra.Command, args []string) {
-			runVersion(env, options, cmd.Root())
+			runVersion(logger.Out(), options, cmd.Root())
 		},
 	}
 
@@ -34,13 +34,13 @@ func newVersionCommand() *cobra.Command {
 	return cmd
 }
 
-func runVersion(env *print.Env, opts versionOptions, root *cobra.Command) {
+func runVersion(log print.Log, opts versionOptions, root *cobra.Command) {
 	if opts.all {
-		env.Out.Printf("%s version: %s\n", rootCommandName, root.Version)
-		env.Out.Printf("System version: %s/%s\n", runtime.GOARCH, runtime.GOOS)
-		env.Out.Printf("Golang version: %s\n", runtime.Version())
+		log.Printf("%s version: %s\n", rootCommandName, root.Version)
+		log.Printf("System version: %s/%s\n", runtime.GOARCH, runtime.GOOS)
+		log.Printf("Golang version: %s\n", runtime.Version())
 		return
 	}
 
-	env.Out.Printf("%s version: %s\n", rootCommandName, root.Version)
+	log.Printf("%s version: %s\n", rootCommandName, root.Version)
 }

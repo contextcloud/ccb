@@ -91,6 +91,7 @@ func (t *templater) getTemplate(template string) string {
 
 func (t *templater) download(ctx context.Context, repository, template string) error {
 	cli := &getter.Client{
+		Ctx:  ctx,
 		Mode: getter.ClientModeDir,
 		Src:  repository,
 		Dst:  fmt.Sprintf(".ccb/%s/%s", templatesDir, template),

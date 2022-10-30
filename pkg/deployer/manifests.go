@@ -58,7 +58,7 @@ func (m Manifests) Save(filename string) error {
 	return os.WriteFile(filename, []byte(all), 0644)
 }
 
-func (m Manifests) Print(out print.Out) {
+func (m Manifests) Print(l print.Log) {
 	all := m.merged()
-	out.Print(all)
+	l.Print(all)
 }

@@ -21,7 +21,7 @@ type generateOptions struct {
 }
 
 func newGenerateCommand() *cobra.Command {
-	env := print.NewEnv()
+	logger := print.NewConsoleLogger()
 	options := generateOptions{}
 
 	// generateCmd represents the generate command
@@ -33,7 +33,7 @@ func newGenerateCommand() *cobra.Command {
 		ccb generate -f https://domain/path/stack.yml
 		ccb generate -f ./stack.yml`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGenerate(env, options, args)
+			return runGenerate(logger, options, args)
 		},
 	}
 
@@ -51,7 +51,7 @@ func newGenerateCommand() *cobra.Command {
 	return cmd
 }
 
-func runGenerate(env *print.Env, opts generateOptions, args []string) error {
+func runGenerate(logger print.Logger, opts generateOptions, args []string) error {
 	stackFile := path.Join(opts.workingDir, opts.stackFile)
 
 	stack, err := parser.LoadStack(stackFile)
@@ -65,7 +65,7 @@ func runGenerate(env *print.Env, opts generateOptions, args []string) error {
 	}
 
 	if len(fns) == 0 {
-		env.Err.Println("No functions found")
+		logger.Err().Println("No functions found")
 		return nil
 	}
 
@@ -80,6 +80,6 @@ func runGenerate(env *print.Env, opts generateOptions, args []string) error {
 		return manifests.Save(opts.output)
 	}
 
-	manifests.Print(env.Out)
+	manifests.Print(logger.Out())
 	return nil
 }

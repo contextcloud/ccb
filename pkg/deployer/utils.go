@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"text/template"
 
+	"github.com/Masterminds/sprig"
 	"gopkg.in/yaml.v2"
 )
 
@@ -74,4 +76,31 @@ func LoadSecret(filename string) (*Secret, error) {
 		Raw:         out,
 		SecretNames: secretNames,
 	}, nil
+}
+
+func GetFuncMaps(namespacePrefix string, routePrefix string) template.FuncMap {
+	fm := sprig.TxtFuncMap()
+	fm["toYaml"] = func(v interface{}) string {
+		data, err := yaml.Marshal(v)
+		if err != nil {
+			// Swallow errors inside of a template.
+			return ""
+		}
+		return strings.TrimSuffix(string(data), "\n")
+	}
+	fm["namespace"] = func(v interface{}) string {
+		ns, ok := v.(string)
+		if !ok {
+			return ""
+		}
+		return namespacePrefix + ns
+	}
+	fm["route"] = func(v interface{}) string {
+		ns, ok := v.(string)
+		if !ok {
+			return ""
+		}
+		return routePrefix + ns
+	}
+	return fm
 }

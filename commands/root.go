@@ -41,7 +41,6 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(newBuildCommand())
 	cmd.AddCommand(newFetchCommand())
 	cmd.AddCommand(newGenerateCommand())
-	cmd.AddCommand(newPushCommand())
 	cmd.AddCommand(newRoutesCommand())
 	cmd.AddCommand(newVersionCommand())
 

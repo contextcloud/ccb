@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func ParseMap(envvars []string, keyName string) (map[string]string, error) {
-	result := make(map[string]string)
+func ParseMap(envvars []string, keyName string) (map[string]*string, error) {
+	result := make(map[string]*string)
 	for _, envvar := range envvars {
 		s := strings.SplitN(strings.TrimSpace(envvar), "=", 2)
 		if len(s) != 2 {
@@ -25,13 +25,13 @@ func ParseMap(envvars []string, keyName string) (map[string]string, error) {
 			return nil, fmt.Errorf("empty %s value: [%s]", keyName, envvar)
 		}
 
-		result[envvarName] = envvarValue
+		result[envvarName] = &envvarValue
 	}
 	return result, nil
 }
 
-func MergeMap(i map[string]string, j map[string]string) map[string]string {
-	merged := make(map[string]string)
+func MergeMap(i map[string]*string, j map[string]*string) map[string]*string {
+	merged := make(map[string]*string)
 
 	for k, v := range i {
 		merged[k] = v

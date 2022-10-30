@@ -41,8 +41,8 @@ type Function struct {
 	Template       string             `yaml:"template"`
 	ServiceAccount string             `yaml:"service_account"`
 	BuildOptions   []string           `yaml:"build_options"`
-	BuildArgs      map[string]string  `yaml:"build_args"`
-	Env            map[string]string  `yaml:"env"`
+	BuildArgs      map[string]*string `yaml:"build_args"`
+	Env            map[string]*string `yaml:"env"`
 	Secrets        []string           `yaml:"secrets"`
 	Envs           []string           `yaml:"envs"`
 	Labels         *map[string]string `yaml:"labels"`

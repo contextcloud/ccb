@@ -19,7 +19,7 @@ type routesOptions struct {
 }
 
 func newRoutesCommand() *cobra.Command {
-	env := print.NewEnv()
+	logger := print.NewConsoleLogger()
 	options := routesOptions{}
 
 	// generateCmd represents the generate command
@@ -31,7 +31,7 @@ func newRoutesCommand() *cobra.Command {
 		ccb routes -f https://domain/path/stack.yml
 		ccb routes -f ./stack.yml`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runRoutes(env, options, args)
+			return runRoutes(logger, options, args)
 		},
 	}
 
@@ -47,7 +47,7 @@ func newRoutesCommand() *cobra.Command {
 	return cmd
 }
 
-func runRoutes(env *print.Env, opts routesOptions, args []string) error {
+func runRoutes(logger print.Logger, opts routesOptions, args []string) error {
 	stackFile := path.Join(opts.workingDir, opts.stackFile)
 
 	stack, err := parser.LoadStack(stackFile)
@@ -61,7 +61,7 @@ func runRoutes(env *print.Env, opts routesOptions, args []string) error {
 	}
 
 	if len(routes) == 0 {
-		env.Err.Println("No routes found")
+		logger.Err().Println("No routes found")
 		return nil
 	}
 
@@ -76,6 +76,6 @@ func runRoutes(env *print.Env, opts routesOptions, args []string) error {
 		return manifests.Save(opts.output)
 	}
 
-	manifests.Print(env.Out)
+	manifests.Print(logger.Out())
 	return nil
 }

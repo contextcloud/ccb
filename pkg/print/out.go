@@ -5,28 +5,28 @@ import (
 	"io"
 )
 
-type Out interface {
+type Log interface {
 	Printf(format string, a ...interface{})
 	Print(a ...interface{})
 	Println(a ...interface{})
 }
 
-type out struct {
+type log struct {
 	io.Writer
 }
 
-func (o out) Printf(format string, a ...interface{}) {
+func (o log) Printf(format string, a ...interface{}) {
 	_, _ = fmt.Fprintf(o, format, a...)
 }
 
-func (o out) Print(a ...interface{}) {
+func (o log) Print(a ...interface{}) {
 	_, _ = fmt.Fprint(o, a...)
 }
 
-func (o out) Println(a ...interface{}) {
+func (o log) Println(a ...interface{}) {
 	_, _ = fmt.Fprintln(o, a...)
 }
 
-func NewOut(w io.Writer) Out {
-	return out{w}
+func NewLog(w io.Writer) Log {
+	return log{w}
 }
