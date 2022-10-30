@@ -4,9 +4,9 @@ import (
 	"context"
 	"path"
 
-	"github.com/contextcloud/ccb-cli/pkg/parser"
-	"github.com/contextcloud/ccb-cli/pkg/print"
-	"github.com/contextcloud/ccb-cli/pkg/templater"
+	"github.com/contextcloud/ccb/pkg/parser"
+	"github.com/contextcloud/ccb/pkg/print"
+	"github.com/contextcloud/ccb/pkg/templater"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +17,7 @@ type fetchOptions struct {
 }
 
 func newFetchCommand() *cobra.Command {
-	env := print.NewEnv()
+	logger := print.NewConsoleLogger()
 	options := fetchOptions{}
 
 	// fetchCmd represents the pack command
@@ -29,7 +29,7 @@ func newFetchCommand() *cobra.Command {
   ccb fetch -f https://domain/path/stack.yml
   ccb fetch -f ./stack.yml`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runFetch(env, options, args)
+			return runFetch(logger, options, args)
 		},
 	}
 
@@ -42,7 +42,7 @@ func newFetchCommand() *cobra.Command {
 	return cmd
 }
 
-func runFetch(env *print.Env, opts fetchOptions, args []string) error {
+func runFetch(logger print.Logger, opts fetchOptions, args []string) error {
 	stackFile := path.Join(opts.workingDir, opts.stackFile)
 
 	stack, err := parser.LoadStack(stackFile)
@@ -56,7 +56,7 @@ func runFetch(env *print.Env, opts fetchOptions, args []string) error {
 	}
 
 	if len(fns) == 0 {
-		env.Err.Println("No functions found")
+		logger.Err().Println("No functions found")
 		return nil
 	}
 
@@ -66,14 +66,15 @@ func runFetch(env *print.Env, opts fetchOptions, args []string) error {
 		t.AddFunction(fn.Key, fn.Template)
 	}
 
-	downloaded, err := t.Download(context.Background())
+	ctx := context.Background()
+	downloaded, err := t.Download(ctx)
 	if err != nil {
-		env.Err.Println("Download failed: ", err)
+		logger.Err().Println("Download failed: ", err)
 		return err
 	}
 
 	for _, path := range downloaded {
-		env.Out.Println("Fetched", path)
+		logger.Out().Println("Fetched", path)
 	}
 	return nil
 }

@@ -4,15 +4,27 @@ import (
 	"os"
 )
 
-// Env is the environment of a command
-type Env struct {
-	Out Out
-	Err Out
+type Logger interface {
+	Out() Log
+	Err() Log
 }
 
-func NewEnv() *Env {
-	return &Env{
-		Out: out{Writer: os.Stdout},
-		Err: out{Writer: os.Stderr},
+type logger struct {
+	out Log
+	err Log
+}
+
+func (l *logger) Out() Log {
+	return l.out
+}
+
+func (l *logger) Err() Log {
+	return l.err
+}
+
+func NewConsoleLogger() Logger {
+	return &logger{
+		out: NewLog(os.Stdout),
+		err: NewLog(os.Stderr),
 	}
 }

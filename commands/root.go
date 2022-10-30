@@ -12,7 +12,6 @@ const rootCommandName = "ccb"
 
 // These variables are initialized externally during the build. See the Makefile.
 var Version string
-var GitCommit string
 
 func Execute() {
 	if err := NewRootCommand().Execute(); err != nil {
@@ -24,7 +23,7 @@ func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   rootCommandName,
 		Short: "Manage your Context Cloud functions",
-		Long: `	Manage your Context Cloud functions from the command line`,
+		Long:  `	Manage your Context Cloud functions from the command line`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			root := cmd.Root()
 			root.Version = Version
@@ -41,10 +40,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(newBuildCommand())
 	cmd.AddCommand(newFetchCommand())
 	cmd.AddCommand(newGenerateCommand())
-	cmd.AddCommand(newPackCommand())
-	cmd.AddCommand(newPushCommand())
 	cmd.AddCommand(newRoutesCommand())
-	cmd.AddCommand(newTarCommand())
 	cmd.AddCommand(newVersionCommand())
 
 	return cmd

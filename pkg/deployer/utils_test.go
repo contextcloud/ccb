@@ -3,7 +3,7 @@ package deployer
 import "testing"
 
 func Test_LoadSecret(t *testing.T) {
-	secret, err := LoadSecret("../../example/.secrets/assets.yaml")
+	secret, err := LoadSecret("./example/.secrets/assets.yaml")
 	if err != nil {
 		t.Error(err)
 		return
@@ -23,13 +23,13 @@ func Test_LoadSecret(t *testing.T) {
 }
 
 func Test_LoadEnv(t *testing.T) {
-	env, err := LoadEnv("../../example/.env/common.yaml")
+	env, err := LoadEnv("./example/.env/common.yaml")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if env["demo"] != "yes" {
+	if env["demo"] == nil || *env["demo"] != "yes" {
 		t.Error("Invalid env")
 		return
 	}

@@ -2,15 +2,14 @@ package deployer
 
 import (
 	"bytes"
+	"embed"
 	"errors"
-	"os"
+	"io/fs"
 	"strings"
 	"text/template"
 
-	rice "github.com/GeertJohan/go.rice"
-	"github.com/contextcloud/ccb-cli/pkg/deployer/templates"
-	"github.com/contextcloud/ccb-cli/pkg/parser"
-	"github.com/contextcloud/ccb-cli/pkg/utils"
+	"github.com/contextcloud/ccb/pkg/parser"
+	"github.com/contextcloud/ccb/pkg/utils"
 )
 
 var (
@@ -27,6 +26,9 @@ var (
 	// ErrInvalidFQDN when the FQDN is invalid
 	ErrInvalidFQDN = errors.New("invalid FQDN")
 )
+
+//go:embed templates/*
+var res embed.FS
 
 var livenessProbe = &Probe{
 	Enabled:             true,
@@ -51,14 +53,13 @@ type Manager interface {
 }
 
 type manager struct {
-	box        *rice.Box
 	workingDir string
 	namespace  string
 	commit     string
 	funcMap    template.FuncMap
 }
 
-func (m *manager) mergeEnv(all map[string]Environment, files []string, env map[string]string) (map[string]string, error) {
+func (m *manager) mergeEnv(all map[string]Environment, files []string, env map[string]*string) (map[string]*string, error) {
 	var out Environment
 	for _, name := range files {
 		filename, err := utils.YamlFile(m.workingDir, name)
@@ -100,41 +101,35 @@ func (m *manager) secretNames(all map[string]*Secret, files []string) ([]string,
 func (m *manager) executeFunction(dir string, key string, data map[string]interface{}) ([]Manifest, error) {
 	var out []Manifest
 
-	if err := m.box.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		// Guard
+	err := fs.WalkDir(res, "templates/"+dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		// If it's a dir skip
-		if info.IsDir() {
+		if d.IsDir() {
 			return nil
 		}
-
-		tmplString, err := m.box.String(path)
+		b, err := fs.ReadFile(res, path)
 		if err != nil {
 			return err
 		}
-
-		// parse the file
 		tmpl, err := template.New(path).
 			Funcs(m.funcMap).
-			Parse(tmplString)
+			Parse(string(b))
 		if err != nil {
 			return err
 		}
-
 		var tpl bytes.Buffer
 		if err := tmpl.Execute(&tpl, data); err != nil {
 			return err
 		}
-
 		out = append(out, Manifest{
 			Type:    ToManifestType(path),
 			Key:     key,
 			Content: tpl.String(),
 		})
 		return nil
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -157,7 +152,6 @@ func (m *manager) GenerateRoutes(routes []*parser.Route) (Manifests, error) {
 			return nil, err
 		}
 		all = append(all, out...)
-
 	}
 
 	return all, nil
@@ -231,9 +225,9 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 		}
 
 		// add the service envs
-		env["SERVICENAME"] = fn.Key
-		env["VERSION"] = fn.Version
-		env["ENVIRONMENT"] = fn.Environment
+		env["SERVICENAME"] = &fn.Key
+		env["VERSION"] = &fn.Version
+		env["ENVIRONMENT"] = &fn.Environment
 
 		secrets, err := m.secretNames(secrets, fn.Secrets)
 		if err != nil {
@@ -345,11 +339,9 @@ func NewManager(workingDir string, namespace string, commit string) Manager {
 		routesPrefix = namespace[indexOf+2:] + "--"
 	}
 
-	box := templates.NewBox()
-	funcMap := templates.GetFuncMaps(namespacePrefix, routesPrefix)
+	funcMap := GetFuncMaps(namespacePrefix, routesPrefix)
 
 	return &manager{
-		box:        box,
 		workingDir: workingDir,
 		namespace:  namespace,
 		commit:     commit,
