@@ -12,7 +12,6 @@ const rootCommandName = "ccb"
 
 // These variables are initialized externally during the build. See the Makefile.
 var Version string
-var GitCommit string
 
 func Execute() {
 	if err := NewRootCommand().Execute(); err != nil {
