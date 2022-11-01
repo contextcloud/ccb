@@ -29,7 +29,7 @@ func Test_LoadEnv(t *testing.T) {
 		return
 	}
 
-	if env["demo"] == nil || *env["demo"] != "yes" {
+	if env["demo"] != "yes" {
 		t.Error("Invalid env")
 		return
 	}

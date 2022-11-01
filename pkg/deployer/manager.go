@@ -59,7 +59,7 @@ type manager struct {
 	funcMap    template.FuncMap
 }
 
-func (m *manager) mergeEnv(all map[string]Environment, files []string, env map[string]*string) (map[string]*string, error) {
+func (m *manager) mergeEnv(all map[string]Environment, files []string, env map[string]string) (map[string]string, error) {
 	var out Environment
 	for _, name := range files {
 		filename, err := utils.YamlFile(m.workingDir, name)
@@ -225,9 +225,9 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 		}
 
 		// add the service envs
-		env["SERVICENAME"] = &fn.Key
-		env["VERSION"] = &fn.Version
-		env["ENVIRONMENT"] = &fn.Environment
+		env["SERVICENAME"] = fn.Key
+		env["VERSION"] = fn.Version
+		env["ENVIRONMENT"] = fn.Environment
 
 		secrets, err := m.secretNames(secrets, fn.Secrets)
 		if err != nil {
