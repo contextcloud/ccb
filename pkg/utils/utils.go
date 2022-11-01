@@ -30,8 +30,8 @@ func ParseMap(envvars []string, keyName string) (map[string]*string, error) {
 	return result, nil
 }
 
-func MergeMap(i map[string]*string, j map[string]*string) map[string]*string {
-	merged := make(map[string]*string)
+func MergeMap[T any](i map[string]T, j map[string]T) map[string]T {
+	merged := make(map[string]T)
 
 	for k, v := range i {
 		merged[k] = v

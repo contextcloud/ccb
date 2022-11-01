@@ -21,7 +21,7 @@ type Probe struct {
 	PeriodSeconds       int
 }
 
-type Environment map[string]*string
+type Environment map[string]string
 
 type Secret struct {
 	Kind        string
