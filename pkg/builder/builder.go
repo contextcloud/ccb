@@ -11,6 +11,7 @@ import (
 
 	"github.com/contextcloud/ccb/pkg/builder/resources"
 	"github.com/contextcloud/ccb/pkg/print"
+	"github.com/contextcloud/ccb/pkg/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/neilotoole/errgroup"
@@ -115,9 +116,8 @@ func (b *builder) Build(ctx context.Context) ([]string, error) {
 
 	var out []string
 	for _, doc := range b.functions {
-		out = append(out, doc.Name)
-
 		v := doc
+		out = append(out, v.Name)
 
 		g.Go(func() error {
 			return b.build(ctx, v)
@@ -127,15 +127,14 @@ func (b *builder) Build(ctx context.Context) ([]string, error) {
 	return out, g.Wait()
 }
 
-func (b *builder) files(ctx context.Context, bf buildFunction) (string, error) {
+func (b *builder) function(ctx context.Context, bf buildFunction) (string, error) {
 	// build the first one!
 	b.Log.Printf("%s: Building files\n", bf.Name)
 
-	path := bf.FilesPath
-	reader, err := buildArchive(
-		NewDirArchive(path, false),
-		NewRawArchive("Dockerfile", resources.FilesDockerFile),
-	)
+	dir := NewDirArchive(bf.FilesPath)
+	dockerfile := NewRawArchive("Dockerfile", resources.FilesDockerFile)
+
+	reader, err := buildArchive(dir, dockerfile)
 	if err != nil {
 		return "", err
 	}
@@ -145,7 +144,7 @@ func (b *builder) files(ctx context.Context, bf buildFunction) (string, error) {
 		Dockerfile: "Dockerfile",
 		Remove:     true,
 		BuildArgs: map[string]*string{
-			"FILES": pstring(path),
+			"FILES": &dir.Name,
 		},
 	}
 
@@ -168,25 +167,27 @@ func (b *builder) files(ctx context.Context, bf buildFunction) (string, error) {
 	return auxs[len(auxs)-1].Id, nil
 }
 
-func (b *builder) function(ctx context.Context, bf buildFunction, filesImage string) (string, error) {
+func (b *builder) handler(ctx context.Context, bf buildFunction, filesImage string) (string, error) {
 	// build the first one!
 	b.Log.Printf("%s: Building function\n", bf.Name)
 
-	reader, err := buildArchive(
-		NewDirArchive(bf.TemplatePath, true),
-	)
+	template := NewDirArchive(bf.TemplatePath)
+	reader, err := buildArchive(template)
 	if err != nil {
 		return "", err
 	}
 
+	hargs := map[string]*string{
+		"FUNCTION_IMG": &filesImage,
+	}
+	args := utils.MergeMap(bf.Args, hargs)
+
 	buildOptions := types.ImageBuildOptions{
 		Context:    reader,
-		Dockerfile: "Dockerfile",
+		Dockerfile: fmt.Sprintf("%s/Dockerfile", template.Name),
 		Remove:     true,
 		Tags:       []string{bf.Image},
-		BuildArgs: map[string]*string{
-			"FILES": pstring(filesImage),
-		},
+		BuildArgs:  args,
 	}
 
 	imageResp, err := b.cli.ImageBuild(ctx, reader, buildOptions)
@@ -231,18 +232,18 @@ func (b *builder) push(ctx context.Context, bf buildFunction, functionImage stri
 
 func (b *builder) build(ctx context.Context, bf buildFunction) error {
 	// what's the files?
-	filesImg, err := b.files(ctx, bf)
+	functionImg, err := b.function(ctx, bf)
 	if err != nil {
 		return err
 	}
 
-	functionImg, err := b.function(ctx, bf, filesImg)
+	handlerImg, err := b.handler(ctx, bf, functionImg)
 	if err != nil {
 		return err
 	}
 
 	if b.Push {
-		if err := b.push(ctx, bf, functionImg); err != nil {
+		if err := b.push(ctx, bf, handlerImg); err != nil {
 			return err
 		}
 	}
