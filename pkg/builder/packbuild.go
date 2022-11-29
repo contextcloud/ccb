@@ -82,11 +82,12 @@ func (d *packBuild) handler(ctx context.Context, filesImage string) (string, err
 
 	imageName := d.builder.imageName(d.name)
 	buildOptions := types.ImageBuildOptions{
-		Context:    reader,
-		Dockerfile: fmt.Sprintf("%s/Dockerfile", template.Name),
-		Remove:     true,
-		Tags:       []string{imageName},
-		BuildArgs:  args,
+		Context:     reader,
+		Dockerfile:  fmt.Sprintf("%s/Dockerfile", template.Name),
+		Remove:      true,
+		Tags:        []string{imageName},
+		BuildArgs:   args,
+		NetworkMode: d.builder.Network,
 	}
 
 	imageResp, err := d.builder.cli.ImageBuild(ctx, reader, buildOptions)

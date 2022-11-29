@@ -33,11 +33,12 @@ func (d *dockerfileBuild) Run(ctx context.Context) (*BuildResult, error) {
 
 	imageName := d.builder.imageName(d.name)
 	buildOptions := types.ImageBuildOptions{
-		Context:    reader,
-		Dockerfile: "Dockerfile",
-		Remove:     true,
-		Tags:       []string{imageName},
-		BuildArgs:  d.buildArgs,
+		Context:     reader,
+		Dockerfile:  "Dockerfile",
+		Remove:      true,
+		Tags:        []string{imageName},
+		BuildArgs:   d.buildArgs,
+		NetworkMode: d.builder.Network,
 	}
 
 	imageResp, err := d.builder.cli.ImageBuild(ctx, reader, buildOptions)
