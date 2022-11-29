@@ -7,6 +7,7 @@ import (
 	"github.com/contextcloud/ccb/pkg/parser"
 	"github.com/contextcloud/ccb/pkg/print"
 	"github.com/contextcloud/ccb/pkg/templater"
+	"github.com/contextcloud/ccb/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -62,6 +63,10 @@ func runFetch(logger print.Logger, opts fetchOptions, args []string) error {
 
 	t := templater.NewTemplater(opts.workingDir)
 	for _, fn := range fns {
+		if utils.IsDockerTemplate(fn.Template) {
+			continue
+		}
+
 		// Need to fetch templates.
 		t.AddFunction(fn.Key, fn.Template)
 	}

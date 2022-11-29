@@ -16,6 +16,7 @@ type ArchiveInfo struct {
 	Type   string
 	Name   string
 	Folder string
+	Path   string
 	Body   []byte
 }
 
@@ -49,8 +50,6 @@ func (info *ArchiveInfo) addDir(tw *tar.Writer) error {
 		}
 	}
 
-	basename := path.Base(info.Folder)
-
 	walkFn := func(p string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -79,8 +78,8 @@ func (info *ArchiveInfo) addDir(tw *tar.Writer) error {
 			return err
 		}
 
-		n := strings.TrimPrefix(p, info.Folder)
-		h.Name = path.Join(basename, filepath.ToSlash(n))
+		n := strings.TrimPrefix(p, info.Path)
+		h.Name = path.Join(info.Folder, filepath.ToSlash(n))
 
 		if err := tw.WriteHeader(h); err != nil {
 			return err
@@ -98,7 +97,7 @@ func (info *ArchiveInfo) addDir(tw *tar.Writer) error {
 		return nil
 	}
 
-	if err := filepath.Walk(info.Folder, walkFn); err != nil {
+	if err := filepath.Walk(info.Path, walkFn); err != nil {
 		return err
 	}
 
@@ -116,12 +115,17 @@ func (info *ArchiveInfo) Write(tw *tar.Writer) error {
 	}
 }
 
-func NewDirArchive(folder string) *ArchiveInfo {
-	name := path.Base(folder)
+func NewDirArchive(filepath string, includeBasename bool) *ArchiveInfo {
+	name := path.Base(filepath)
+	folder := ""
+	if includeBasename {
+		folder = name
+	}
 	return &ArchiveInfo{
 		Type:   "dir",
 		Name:   name,
 		Folder: folder,
+		Path:   filepath,
 	}
 }
 

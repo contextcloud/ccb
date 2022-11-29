@@ -4,12 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"path"
 	"runtime"
 	"strings"
 
-	"github.com/contextcloud/ccb/pkg/builder/resources"
 	"github.com/contextcloud/ccb/pkg/print"
 	"github.com/contextcloud/ccb/pkg/utils"
 	"github.com/docker/docker/api/types"
@@ -17,8 +14,27 @@ import (
 	"github.com/neilotoole/errgroup"
 )
 
+type BuildResult struct {
+	Image string
+}
+
+type Build interface {
+	Name() string
+	Run(ctx context.Context) (*BuildResult, error)
+}
+
 // BuildArgs make prettier
 type BuildArgs map[string]*string
+
+type BuildFunction struct {
+	Args    BuildArgs
+	Network string
+	Image   string
+
+	Name         string
+	FilesPath    string
+	TemplatePath string
+}
 
 type Options struct {
 	Log        print.Log
@@ -31,16 +47,6 @@ type Options struct {
 	Prefix       string
 	Tag          string
 	RegistryAuth string
-}
-
-type buildFunction struct {
-	Args    BuildArgs
-	Network string
-	Image   string
-
-	Name         string
-	FilesPath    string
-	TemplatePath string
 }
 
 // Builder for building stuff.
@@ -66,8 +72,8 @@ func NewBuilder(opts *Options) (Builder, error) {
 type builder struct {
 	*Options
 
-	functions []buildFunction
 	cli       *client.Client
+	functions []Build
 }
 
 func (b *builder) imageName(name string) string {
@@ -82,31 +88,20 @@ func (b *builder) imageName(name string) string {
 	return fmt.Sprintf("%s/%s:%s", b.Registry, n, b.Tag)
 }
 
+func (b *builder) toBuild(name string, template string, args BuildArgs) (Build, error) {
+	if utils.IsDockerTemplate(template) {
+		return NewDockerfileBuild(b, name, args)
+	}
+
+	return NewPackBuild(b, name, template, args)
+}
+
 func (b *builder) AddService(name string, template string, args BuildArgs) error {
-	tpath := path.Join(".", ".ccb", "templates", template)
-	fpath := path.Join(b.WorkingDir, name)
-
-	// check if the template exists
-	if _, err := os.Stat(tpath); err != nil {
+	build, err := b.toBuild(name, template, args)
+	if err != nil {
 		return err
 	}
-	// check if the files exists
-	if _, err := os.Stat(fpath); err != nil {
-		return err
-	}
-
-	image := b.imageName(name)
-	bf := buildFunction{
-		Network: b.Network,
-		Image:   image,
-		Args:    args,
-
-		Name:         name,
-		FilesPath:    fpath,
-		TemplatePath: tpath,
-	}
-	b.functions = append(b.functions, bf)
-
+	b.functions = append(b.functions, build)
 	return nil
 }
 
@@ -117,105 +112,43 @@ func (b *builder) Build(ctx context.Context) ([]string, error) {
 	var out []string
 	for _, doc := range b.functions {
 		v := doc
-		out = append(out, v.Name)
+		name := v.Name()
+		out = append(out, name)
 
 		g.Go(func() error {
-			return b.build(ctx, v)
+			// run the build
+			result, err := v.Run(ctx)
+			if err != nil {
+				return err
+			}
+			if result == nil || result.Image == "" {
+				return errors.New("no image")
+			}
+
+			// do we push?
+			if err := b.push(ctx, result.Image); err != nil {
+				return err
+			}
+
+			return nil
 		})
+
 	}
 
 	return out, g.Wait()
 }
 
-func (b *builder) function(ctx context.Context, bf buildFunction) (string, error) {
-	// build the first one!
-	b.Log.Printf("%s: Building files\n", bf.Name)
-
-	dir := NewDirArchive(bf.FilesPath)
-	dockerfile := NewRawArchive("Dockerfile", resources.FilesDockerFile)
-
-	reader, err := buildArchive(dir, dockerfile)
-	if err != nil {
-		return "", err
+func (b *builder) push(ctx context.Context, image string) error {
+	if !b.Push {
+		return nil
 	}
 
-	buildOptions := types.ImageBuildOptions{
-		Context:    reader,
-		Dockerfile: "Dockerfile",
-		Remove:     true,
-		BuildArgs: map[string]*string{
-			"FILES": &dir.Name,
-		},
-	}
-
-	imageResp, err := b.cli.ImageBuild(ctx, reader, buildOptions)
-	if err != nil {
-		return "", err
-	}
-	defer imageResp.Body.Close()
-
-	// parse the output
-	auxs, err := buildResult(imageResp.Body, b.Log)
-	if err != nil {
-		return "", err
-	}
-
-	if len(auxs) == 0 {
-		return "", errors.New("no aux data")
-	}
-
-	return auxs[len(auxs)-1].Id, nil
-}
-
-func (b *builder) handler(ctx context.Context, bf buildFunction, filesImage string) (string, error) {
-	// build the first one!
-	b.Log.Printf("%s: Building function\n", bf.Name)
-
-	template := NewDirArchive(bf.TemplatePath)
-	reader, err := buildArchive(template)
-	if err != nil {
-		return "", err
-	}
-
-	hargs := map[string]*string{
-		"FUNCTION_IMG": &filesImage,
-	}
-	args := utils.MergeMap(bf.Args, hargs)
-
-	buildOptions := types.ImageBuildOptions{
-		Context:    reader,
-		Dockerfile: fmt.Sprintf("%s/Dockerfile", template.Name),
-		Remove:     true,
-		Tags:       []string{bf.Image},
-		BuildArgs:  args,
-	}
-
-	imageResp, err := b.cli.ImageBuild(ctx, reader, buildOptions)
-	if err != nil {
-		return "", err
-	}
-	defer imageResp.Body.Close()
-
-	// parse the output
-	auxs, err := buildResult(imageResp.Body, b.Log)
-	if err != nil {
-		return "", err
-	}
-
-	if len(auxs) == 0 {
-		return "", errors.New("no aux data")
-	}
-
-	return bf.Image, nil
-}
-
-func (b *builder) push(ctx context.Context, bf buildFunction, functionImage string) error {
-	b.Log.Printf("%s: Pushing image\n", bf.Name)
+	b.Log.Printf("%s: Pushing image\n", image)
 
 	pushOptions := types.ImagePushOptions{
 		RegistryAuth: b.RegistryAuth,
 	}
-	pushResp, err := b.cli.ImagePush(ctx, functionImage, pushOptions)
+	pushResp, err := b.cli.ImagePush(ctx, image, pushOptions)
 	if err != nil {
 		return err
 	}
@@ -225,27 +158,6 @@ func (b *builder) push(ctx context.Context, bf buildFunction, functionImage stri
 	_, err = pushResult(pushResp, b.Log)
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (b *builder) build(ctx context.Context, bf buildFunction) error {
-	// what's the files?
-	functionImg, err := b.function(ctx, bf)
-	if err != nil {
-		return err
-	}
-
-	handlerImg, err := b.handler(ctx, bf, functionImg)
-	if err != nil {
-		return err
-	}
-
-	if b.Push {
-		if err := b.push(ctx, bf, handlerImg); err != nil {
-			return err
-		}
 	}
 
 	return nil

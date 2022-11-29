@@ -8,6 +8,17 @@ import (
 	"strings"
 )
 
+var dockerTemplates = map[string]bool{
+	"":           true,
+	"docker":     true,
+	"dockerfile": true,
+}
+
+func IsDockerTemplate(template string) bool {
+	_, ok := dockerTemplates[strings.ToLower(template)]
+	return ok
+}
+
 func ParseMap(envvars []string, keyName string) (map[string]*string, error) {
 	result := make(map[string]*string)
 	for _, envvar := range envvars {
