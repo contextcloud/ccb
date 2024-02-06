@@ -11,7 +11,6 @@ import (
 	"github.com/contextcloud/ccb/pkg/print"
 	"github.com/contextcloud/ccb/pkg/utils"
 	cliconfig "github.com/docker/cli/cli/config"
-	"github.com/docker/docker/api/types"
 
 	"github.com/spf13/cobra"
 )
@@ -104,8 +103,7 @@ func runBuild(logger print.Logger, opts buildOptions, args []string) error {
 		panic(err)
 	}
 
-	a, _ := cfg.GetAuthConfig(registry)
-	ac := types.AuthConfig(a)
+	ac, _ := cfg.GetAuthConfig(registry)
 	if opts.username != "" {
 		ac.Username = opts.username
 	}
