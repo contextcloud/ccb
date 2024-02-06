@@ -12,6 +12,9 @@ spec:
   - name: {{ $key }}
     service: {{ $key }}
     port: 8080
+    connect-timeout: 300s
+    read-timeout: 300s
+    send-timeout: 300s
 {{- end }}
   subroutes:
 {{- range $key, $value := .Routes }}
