@@ -48,6 +48,8 @@ type Function struct {
 	Labels         *map[string]string `yaml:"labels"`
 	Annotations    *map[string]string `yaml:"annotations"`
 	Replicas       *int               `yaml:"replicas"`
+	MinReplicas    *int               `yaml:"min_replicas"`
+	MaxReplicas    *int               `yaml:"max_replicas"`
 	Limits         *FunctionResources `yaml:"limits"`
 	Requests       *FunctionResources `yaml:"requests"`
 	Routes         []FunctionRoute    `yaml:"routes,omitempty"`

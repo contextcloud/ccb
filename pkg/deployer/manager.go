@@ -239,6 +239,12 @@ func (m *manager) GenerateFunctions(registry string, tag string, fns []*parser.F
 		if fn.Replicas != nil && *fn.Replicas > 2 {
 			maxReplicas = *fn.Replicas
 		}
+		if fn.MinReplicas != nil {
+			minReplicas = *fn.MinReplicas
+		}
+		if fn.MaxReplicas != nil {
+			maxReplicas = *fn.MaxReplicas
+		}
 
 		var resources = &Resources{
 			Requests: &ResourceValues{
